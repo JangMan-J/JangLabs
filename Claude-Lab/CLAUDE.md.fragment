@@ -20,9 +20,7 @@ For library/framework/CLI API surface, query **context7** before writing code. D
 
 ## Memory consultation
 
-Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research.
-
-A `UserPromptSubmit` hook (`memory-relevance-injector.sh`) automatically surfaces matched memory bodies inline as `<relevant-memory file="...">...</relevant-memory>` blocks when the prompt contains distinctive substrings or acronyms from a memory entry's description. When a `<relevant-memory>` block appears in the per-turn context, **read it before doing anything else** — the injector already did the relevance check; ignoring it is the failure mode this hook exists to prevent.
+Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research. (A keyword-based auto-surfacing hook was tried briefly and rolled back — see `[Method]` memory on rollback-over-tightening — substring matching at small corpus size produced too many false positives to be net-positive.)
 
 ## LSP trust
 

@@ -55,15 +55,6 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/jangman/.claude/hooks/memory-relevance-injector.sh",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "PreToolUse": [
