@@ -52,3 +52,7 @@ desktop.ini
 # Misc
 *.log
 *.tmp
+
+# Claude-Lab installer backups (per-machine, not portable)
+Claude-Lab/.install-backups/
+Claude-Lab/.uninstall-backups/

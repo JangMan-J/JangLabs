@@ -1,0 +1,41 @@
+# --- begin Claude-Lab harness fragment ---
+# Managed by /home/jangman/Projects/Jangs-Lab/Claude-Lab/install.sh.
+# To regenerate: edit Claude-Lab/CLAUDE.md.fragment and re-run install.sh --apply.
+
+## System fingerprint (immutable facts of this box)
+
+- OS: Arch Linux. Package manager: **pacman** for official repos, **yay** for AUR. NOT apt/yum/dnf. (Note: `paru` is *not* installed on this box despite what older notes may say — this was a `[Fumble]` caught while building this harness.)
+- Boot: **systemd-boot**. NOT GRUB. Updates via `bootctl` / `kernel-install` (rare).
+- Init: systemd. Use `systemctl`, not `service` / `update-rc.d`.
+- Shell: zsh. Bash is available but not default. Prefer POSIX-portable scripts; if bash-only, shebang `#!/usr/bin/env bash` and assume bash.
+- Desktop: KDE Plasma on **Wayland**. X11 assumptions break here.
+- GPU: NVIDIA proprietary driver.
+- A `UserPromptSubmit` hook (`~/.claude/hooks/system-fingerprint.sh`) re-injects current kernel/session/version every turn — read it; do not re-derive.
+
+## Verify-before-act
+
+Before invoking a CLI you have not used in this session, or writing a config you have not validated, run `command -v X && X --help | head` (or `man X`). Do not assume flag/syntax from training data when verification is one shell call away. The fabrication-vs-verification cost imbalance is the single largest source of bad output on this box.
+
+For library/framework/CLI API surface, query **context7** before writing code. Do not guess flags, function signatures, or version-specific behavior. Context7 is loaded for this reason.
+
+## Memory consultation
+
+Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research.
+
+## LSP trust
+
+For type-checked languages (Python, C/C++, TypeScript, Rust), the relevant LSP plugin is loaded and reports diagnostics in tool results. Trust those signals — do not re-derive type errors, missing imports, or symbol resolution that the LSP already surfaced.
+
+## Reflection trigger (knowledge accretion)
+
+After completing a non-trivial task, if either of the following is true, **save a feedback memory before ending the turn**:
+
+- **`[Method]`** — A non-default approach surpassed the default, in a way that would benefit future sessions. Prefix the memory `name:` field with `[Method] ` and include **Why** + **How to apply**.
+- **`[Fumble]`** — A default Claude behavior was likely to mislead and you caught it (or it tripped you and you recovered). Prefix the memory `name:` field with `[Fumble] ` and include **What happens by default** + **Better path** + **How to spot it ahead of time**.
+
+These prefixes make `MEMORY.md` scannable as a patterns/antipatterns library. Do not write `[Method]`/`[Fumble]` memories speculatively — only when a real session showed the win or the trip.
+
+## Hook-aware editing
+
+Edits to `**/settings.json` are guarded against permission-model weakening (`disableAllHooks`, `defaultMode→bypassPermissions/acceptEdits`). Edits to secret paths (`.env`, `*.key`, `*.pem`, `~/.ssh/`, `~/.gnupg/`) are blocked. If a guard fires, fix the underlying request — do not work around the guard.
+# --- end Claude-Lab harness fragment ---
