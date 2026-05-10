@@ -20,6 +20,11 @@ if match '(^|[;&|]\s*)(yum|dnf)\s+'; then
   exit 2
 fi
 
+if match '(^|[;&|]\s*)paru\b'; then
+  echo "bash-idiom-guard: 'paru' is not installed on this box (despite older notes). For repos: 'pacman -S <pkg>'. For AUR: 'yay -S <pkg>'. See [Fumble] paru memory." >&2
+  exit 2
+fi
+
 if match '(^|[;&|]\s*)grub-(install|mkconfig)'; then
   echo "bash-idiom-guard: this box uses systemd-boot, not GRUB. Use 'bootctl' / 'kernel-install' / edit '/boot/loader/entries/'. See archinstall_quirks.md." >&2
   exit 2

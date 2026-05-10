@@ -22,6 +22,8 @@ For library/framework/CLI API surface, query **context7** before writing code. D
 
 Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research.
 
+A `UserPromptSubmit` hook (`memory-relevance-injector.sh`) automatically surfaces matched memory bodies inline as `<relevant-memory file="...">...</relevant-memory>` blocks when the prompt contains distinctive substrings or acronyms from a memory entry's description. When a `<relevant-memory>` block appears in the per-turn context, **read it before doing anything else** — the injector already did the relevance check; ignoring it is the failure mode this hook exists to prevent.
+
 ## LSP trust
 
 For type-checked languages (Python, C/C++, TypeScript, Rust), the relevant LSP plugin is loaded and reports diagnostics in tool results. Trust those signals — do not re-derive type errors, missing imports, or symbol resolution that the LSP already surfaced.

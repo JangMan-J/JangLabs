@@ -6,8 +6,9 @@ A Claude Code harness for this box. Five hook scripts + a CLAUDE.md fragment + a
 
 | Layer | Mechanism | Hook event | Cost per turn |
 |-------|-----------|------------|---------------|
-| Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, paru, systemd-boot, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
-| Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
+| Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, pacman/yay, systemd-boot, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
+| Memory surfacing | `memory-relevance-injector.sh` scans the prompt for distinctive substrings + acronyms from each `MEMORY.md` entry; inlines matched bodies as `<relevant-memory>` blocks (cap 2KB/memory, 8KB total) | `UserPromptSubmit` | ~10ms |
+| Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service`/`paru` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
 | Output verification | `syntax-check-touched.sh` runs `jq empty` / `python -c ast.parse` / `bash -n` etc. on touched files | `PostToolUse` (Edit/Write/MultiEdit) | 10–100ms when fires |
 | Secret-write block | `forbidden-files-guard.sh` blocks writes to `.env`, `*.key`, `*.pem`, `~/.ssh/`, `~/.gnupg/` | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
 | Config drift block | `config-drift-guard.sh` rejects settings.json edits that introduce `disableAllHooks` / `bypassPermissions` / silent `defaultMode` shifts | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
@@ -46,6 +47,7 @@ Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `s
 | File | Role |
 |------|------|
 | `hooks/system-fingerprint.sh` | UserPromptSubmit — 9-line box fingerprint, cached 60s |
+| `hooks/memory-relevance-injector.sh` | UserPromptSubmit — surfaces matched MEMORY.md bodies inline |
 | `hooks/bash-idiom-guard.sh` | PreToolUse(Bash) — block non-Arch idioms |
 | `hooks/syntax-check-touched.sh` | PostToolUse(Edit/Write) — narrow syntax verification |
 | `hooks/forbidden-files-guard.sh` | PreToolUse(Edit/Write) — block secret-path writes |
