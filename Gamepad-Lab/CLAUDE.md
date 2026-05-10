@@ -1,51 +1,44 @@
 # Gamepad-Lab — agent conventions
 
-This lab investigates Steam Input vs JoyShockMapper (JSM) behavior on a real controller (8BitDo Ultimate 2 Wireless), and ports tuned Steam Input layouts to JSM. The thesis: **real-runtime behavioral comparison, not syntax-level translation.** Configs that parse identically still feel different in practice; runtime traces are the only acceptable evidence.
+## Read first
 
-## Read first, in this order
+1. [`README.md`](./README.md) — current focus and lab layout.
+2. [`8bitdo-ultimate2-arch-linux-troubleshooting.md`](./8bitdo-ultimate2-arch-linux-troubleshooting.md) — current investigation. Living doc; update as steps land.
+3. [`vision/INDEX.md`](./vision/INDEX.md) — long-term direction (Steam-Input-vs-JSM behavioral lab). Preserved, not active.
 
-1. **`2026-04-29-gamepad-mapper-conversion-lab-design.md`** — current design doc. Phase plan, agent roles, artifact contracts, validation policy.
-2. **`handoffs/INDEX.md`** — what investigations are paused mid-flight, with current step.
-3. **`findings/INDEX.md`** — durable knowledge surfaced across sessions.
-4. **`docs/superpowers/plans/INDEX.md`** — active plans and supersession graph.
-5. **`tools/README.md`** — runnable Python scripts and their dependencies.
+## What changed
 
-`docs/README.md` is **partly stale** (references `BACKLOG.md`, `mouse_meter.py`, `gyro_probe_dinput.py` that no longer exist; uppercases `FINDINGS/`/`HANDOFFS/` while disk is lowercase). The INDEX files above are authoritative.
+Earlier sessions accumulated material from a Windows-side JSM build effort (branch-a-port cherry-picks, SDL3 source verification) and an Arc-Raiders-specific Steam Input layout investigation. **The Windows JSM saga is concluded and removed.** Don't reintroduce it speculatively.
 
-## Sacred files
+The Arc-Raiders-grounded **VDF→JSM translation work is preserved at `vdf/`** — the user intends to retrace and reapply it in a future project. Treat that subdir as preserved-active: don't delete it, but don't extend it speculatively either. See [`vdf/README.md`](./vdf/README.md) for the load-bearing gotchas.
 
-- **`handoffs/*`** — context seeds for resuming paused work cold. Add new ones; don't mutate existing ones casually. If state has moved on, write a new handoff and mark the old one superseded in `handoffs/INDEX.md`.
-- **`findings/*`** — append-only durable knowledge. Edit only to mark superseded with a forward link, or to fix factual errors. Adding a new finding is preferred to rewriting an old one.
+If the durable hardware facts in `findings/gyro_hid.md` need a companion (e.g. SDL3 driver behavior on Linux), write a fresh finding.
 
-## Test device + pinned versions
+## Current focus
 
-- **Controller:** 8BitDo Ultimate 2 Wireless, **VID `0x2DC8` / PID `0x6012`**, DInput mode (B+Home at startup). Firmware v1.09 minimum (v1.03+ for the 34-byte sensor-bearing report — see `findings/gyro_hid.md`).
-- **JSM:** branched off master at `bb69784488937e0a5e21988b966eccd9f04d504e`, plus the `branch-a-port` cherry-picks live-verified 2026-04-22 (21/21 inputs).
-- **SDL3:** `release-3.4.4` at `5848e584a1b606de26e3dbd1c7e4ecbc34f807a6` (3.4.x is required — `SDL_hidapi_8bitdo.c` doesn't exist on 3.2.x).
-
-Don't change pinned SHAs without updating `findings/jsm_sdl3_source_verification.md` and noting the rebuild in a new finding.
-
-## Evidence rules
-
-- **No parity claim without runtime evidence.** Static source review is a *gate*, not a verdict — see how Phase 1 yielded a YELLOW verdict in `findings/jsm_sdl3_source_verification.md` despite the code reading correctly.
-- **Live verifications cite a log file** under `reference/JSM_JangManJ/` (e.g. `run2.txt` for 21/21 confirmation). New verifications must produce a similar artifact.
-- **Adversarial trace generation** (per design doc § "Adversarial Trace Generation"): produce traces that try to expose drift between Steam Input and JSM, not traces that confirm equivalence on easy paths.
-
-## Runtime gotchas (Windows test rig)
-
-- **8BitDo Ultimate Software** tray app holds the pad's HID interface exclusively → tray → **Exit** (not minimize) before any test.
-- **Steam** claims HID controllers via Steam Input even when not focused → fully exit Steam (tray → Exit) for live tests.
-- **CMake** lives at `C:\Program Files\CMake\bin\cmake.exe` and is *not* on PATH in plain bash — `export PATH="/c/Program Files/CMake/bin:$PATH"` per shell.
-- **Bluetooth is out of scope.** 2.4GHz dongle only.
+**Linux-side gamepad input on a fresh Arch install.** Diagnosing input latency and gyro availability for the 8BitDo Ultimate 2 Wireless under Steam (native pacman install, Wayland, NVIDIA). Kernel HID driver conflict (`hid-generic` / `xpad` claiming the device before Steam can open `/dev/hidraw*`) is the leading hypothesis.
 
 ## Where things go
 
 | Change | Where |
 |--------|-------|
-| New durable observation | `findings/<topic>.md` + add line to `findings/INDEX.md` |
-| New paused-investigation seed | `handoffs/<topic>.md` + add line to `handoffs/INDEX.md` |
-| Implementation plan | `docs/superpowers/plans/<date>-<topic>.md` + add line to plans `INDEX.md` |
-| Design doc that informs a plan | `docs/superpowers/specs/<date>-<topic>-design.md` |
-| New runnable script | `tools/<name>.py` + add line to `tools/README.md` |
-| Raw user-supplied artifact | `reference/<grouping>/...` (logs, VDFs, screenshots, HID dumps) |
-| Per-run trace artifacts | `docs/superpowers/runs/<run-id>/` (dir created on first use) |
+| Steps in the current investigation | Edit `8bitdo-ultimate2-arch-linux-troubleshooting.md` directly — it's a living doc |
+| New durable hardware/protocol fact | `findings/<topic>.md` |
+| New raw artifact (HID dump, log, screenshot) | `reference/<topic>/` (group by source) |
+| New Linux diagnostic script | `tools/<name>.py` + line in `tools/README.md` |
+| A new investigation that warrants its own doc | New top-level markdown file with descriptive name |
+| Material related to the vision (mapper lanes, headless JSM, etc.) | `vision/` — but only if it's a deliberate continuation, not speculative drift |
+| VDF→JSM translation tooling or principles | `vdf/` — when reapplying the work in a future project, fork or copy out; don't expand the scope here without intent |
+
+## Conventions
+
+- **No museum-keeping.** When an investigation concludes (resolved or abandoned), promote durable facts into `findings/` and delete the working notes. Don't keep stale handoffs around.
+- **`vision/` is preserved, not authoritative.** It captures the most comprehensive past articulation of the long-term direction. Cite `vision/INDEX.md` line anchors when referencing concepts; don't mutate the design doc itself.
+- **Real-runtime evidence beats source review.** This is the load-bearing principle from the vision (line 197: "Real Steam Input vs real JSM is authoritative"). Apply it locally too: a `man udev` claim or a config-file inspection isn't proof until something fires on the controller.
+
+## Hardware quick-reference
+
+- **Device:** 8BitDo Ultimate 2 Wireless, VID `0x2DC8`, PID `0x6012` (2.4 GHz dongle / D-Input). Other PIDs: `0x310B` USB wired, `0x6013` dongle alone.
+- **D-Input activation:** Home + B at power-on.
+- **Bluetooth is out of scope** (gyro disabled, 125 Hz polling cap).
+- **Firmware:** v1.03+ for the 34-byte sensor-bearing HID report.

@@ -559,7 +559,7 @@ class TestRunPassesSynthetic(unittest.TestCase):
     """End-to-end tests for run_passes against a synthetic VDF string.
 
     Unlike TestJangmanIntegration, these do not depend on the
-    reference/vdf/ fixture and therefore never skip on fresh clones.
+    reference/ fixture and therefore never skip on fresh clones.
     """
 
     SYNTHETIC = '''
@@ -678,7 +678,7 @@ from vdf_clean import load_vdf, analyze, build_layer_id_map, run_passes, dump_vd
 class TestJangmanIntegration(unittest.TestCase):
     FIXTURE = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "..", "reference", "vdf", "jangman's jyro_v13.vdf",
+        "reference", "jangman's jyro_v13.vdf",
     )
 
     def setUp(self):

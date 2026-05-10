@@ -7,8 +7,8 @@ Personal workspace for AI-assisted (Claude Code) experiments, investigations, an
 | Lab | Focus |
 |-----|-------|
 | [`Agent-Lab/`](./Agent-Lab) | Multi-agent coordination skills and ACP arbiter prompts. |
-| [`ArchLinux-Lab/`](./ArchLinux-Lab) | Arch Linux installation notes and rendered guides. |
-| [`Gamepad-Lab/`](./Gamepad-Lab) | Steam Input / gyro investigations, controller-mapping tools, and pipeline diagnostics for the 8BitDo Ultimate 2 Wireless. |
+| [`ArchLinux-Lab/`](./ArchLinux-Lab) | Personal Arch Linux install guide (rendered HTML). |
+| [`Gamepad-Lab/`](./Gamepad-Lab) | 8BitDo Ultimate 2 Wireless. Currently: Linux-side input-latency / gyro troubleshooting on the Arch install above. Preserved long-term direction in `vision/`: a Steam-Input-vs-JSM behavioral comparison lab. |
 
 ## Working with this repo
 
@@ -22,6 +22,5 @@ Across the labs, recurring directory names mean the same thing:
 
 - `tools/` — runnable scripts (mostly Python).
 - `findings/` — durable knowledge surfaced across sessions.
-- `handoffs/` — self-contained context seeds so a fresh agent session can resume a paused investigation cold.
-- `reference/` — raw user-supplied artifacts (HID dumps, VDFs, screenshots).
-- `docs/` — narrative documentation.
+- `reference/` — raw user-supplied artifacts (HID dumps, logs, screenshots).
+- `vision/` — preserved long-term direction docs that aren't actively executed but inform future plans (cite line anchors via the dir's `INDEX.md`).

@@ -18,6 +18,10 @@ Personal Arch Linux install plan, rendered as a single self-contained HTML docum
 
 Edit the HTML directly. There is no build step and no source-of-truth markdown to regenerate from. The CSS uses semantic classes (`phase`, `phase-header`, `cmd-block`, `warn`, `ref-card`) — preserve them when adding sections.
 
+## Related
+
+Post-install gamepad input troubleshooting on this same Arch system lives at [`../Gamepad-Lab/8bitdo-ultimate2-arch-linux-troubleshooting.md`](../Gamepad-Lab/8bitdo-ultimate2-arch-linux-troubleshooting.md) — kernel HID driver conflict, udev rules, D-Input mode, Steam HIDAPI access.
+
 ## What's missing
 
 - No version or last-updated timestamp inside the document.

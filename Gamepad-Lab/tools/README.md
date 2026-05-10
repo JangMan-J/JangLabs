@@ -1,48 +1,33 @@
-# Tools — runnable scripts
+# Tools — Linux HID/SDL diagnostics
 
-Python scripts. Run from the lab root (`Gamepad-Lab/`) unless a script's docstring says otherwise. This file supersedes the partly-stale tool list in `../docs/README.md`.
+Three Python scripts for poking at the 8BitDo Ultimate 2's input plumbing. Each was originally written during Windows-side investigations but is platform-portable and useful for the current Linux-side input-latency work.
 
-## VDF tooling (Steam Input config)
+Run from the lab root (`Gamepad-Lab/`).
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `vdf_clean.py` | Steam Input VDF cleaner. Strips orphan groups, renumbers stale layer refs, optional deep-clean of cosmetic junk. Now emits two outputs per run: conservative `clean.vdf` + aggressive `dedup.vdf`. | Stdlib only. CLI: `--out-aggressive`. |
-| `test_vdf_clean.py` | Unittest harness for the cleaner. One TestCase per pass + integration test against the Jangman fixture. | Run with `python -m unittest tools.test_vdf_clean` from lab root. |
+| Script | Purpose | Linux deps |
+|--------|---------|------------|
+| `gyro_enum.py` | SDL device enumeration. Lists every joystick SDL sees, whether it's a GameController, and whether it exposes a gyro sensor. **Use first** — confirms whether SDL is even seeing the controller as a sensor-bearing device. | `pysdl2`, `pysdl2-dll` |
+| `gyro_probe_hid.py` | Raw-HID byte-change probe. Three phases (idle / sticks / rotate); pinpoints which bytes in the input report carry gyro. Writes `hid_probe_report.txt`. **Use to confirm the hidraw path is reachable** and the 34-byte sensor-bearing report shape matches `findings/gyro_hid.md`. | `hidapi` |
+| `gyro_meter.py` | Live IMU angular-velocity monitor — zone strip, virtual-cursor mockup, polling-rate auto-detect. Auto-selects SDL sensor path vs raw HID. Useful as a live-feedback tool when toggling kernel modules / udev rules. | `pysdl2`, `pysdl2-dll`, `hidapi` |
 
-## Gyro / HID probes
+## Linux-specific notes
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `gyro_meter.py` | Live IMU angular-velocity monitor — zone strip, virtual-cursor mockup, polling-rate auto-detect. Auto-selects SDL sensor path (NS mode) vs raw HID (DInput mode). | Requires `pysdl2`, `pysdl2-dll`, `hidapi` (DInput path). |
-| `gyro_enum.py` | SDL device enumeration. Lists every joystick SDL sees, whether it's a GameController, and whether it exposes a gyro sensor. | Requires `pysdl2`. |
-| `gyro_probe_hid.py` | Raw-HID byte-change probe, three-phase (idle / sticks / rotate). Pinpoints gyro bytes in the input report. Writes `hid_probe_report.txt`. | Requires `hidapi`. |
+- The kernel's `hid-generic` / `xpad` driver may claim the device before user-space code can open `/dev/hidraw*` — see `../8bitdo-ultimate2-arch-linux-troubleshooting.md`. If `gyro_probe_hid.py` returns "Permission denied" or no device, the udev rule from that doc is likely missing.
+- Run as your normal user once udev grants `MODE="0666"` for the relevant VID/PID. `sudo` is not required.
+- Wayland and X11 sessions both work for these scripts (none of them grab keyboard/mouse input).
 
-## Input timing
+## Install
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `inventory_input_test.py` | Pygame click-latency tool. Measures `first_move_ms` post-click to distinguish gyro-freeze race losses from filter-bleed (Ouija Effect). | Requires `pygame`. Companion writeup: `inventory_input_test.md`. |
-| `inventory_input_test.md` | Test methodology and result interpretation for `inventory_input_test.py`. | Not runnable. |
+The minimum for `gyro_probe_hid.py` alone:
 
-## Bridge / mapping logic
+```sh
+pip install hidapi
+```
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `controller_mapper.py` | Controller-input mapping / event translation. Large file — read its top docstring before assuming intent. | |
-| `jsm_bridge.py` | Bridge between mappers; ViGEm-DS4 wrapper logic. The viability plan (`docs/superpowers/plans/2026-04-20-jsm-sdl3-viability.md`) evaluates whether to retire this in favor of pad → SDL3 → JSM direct. | Windows-side: depends on ViGEm. |
+For SDL-based scripts:
 
-## Internal helpers
+```sh
+pip install pysdl2 pysdl2-dll
+```
 
-| File | Purpose |
-|------|---------|
-| `_inventory.py` | Internal utility (leading underscore — do not import as a public module). |
-
-## Configs (not scripts)
-
-| File | Purpose |
-|------|---------|
-| `jsm_sdl3_config.txt` | A JSM config file used during SDL3 substrate testing. Not Python. |
-
-## Things this list does *not* include
-
-The earlier `docs/README.md` references `mouse_meter.py` and `gyro_probe_dinput.py`. Neither exists in this directory; treat those references as historical.
+System SDL3 packages are not required — `pysdl2-dll` ships its own. Confirm SDL availability with `gyro_enum.py` before reaching for `gyro_meter.py`.

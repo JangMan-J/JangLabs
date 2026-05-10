@@ -1,13 +1,13 @@
 # Arc Raiders VDF → JSM translation audit
 
-**Source VDF:** `JangsJyro/reference/vdf/jangman's jyro_v13.vdf`
-**Inventory:** `JangsJyro/findings/arc_raiders_vdf_inventory.md` (1554 lines, regenerable via `tools/_inventory.py`)
-**JSM scaffold:** `JangsJyro/tools/jsm_sdl3_config.txt` (already wired with verified gyro settings)
-**Step 1 of plan:** `docs/superpowers/plans/2026-04-23-vdf-to-jsm-port.md`
+**Source VDF:** `./reference/jangman's jyro_v13.vdf` (the v13 tuned profile this audit is grounded in)
+**Inventory:** auto-generated section/group/binding dump that lived alongside this audit; not preserved here (regenerable from the source VDF via `vdf_clean.py`'s `analyze` pass).
+**JSM scaffold:** historical `jsm_sdl3_config.txt` from the prior workspace; not preserved. Reapplying the work means re-authoring the JSM config from this audit row-by-row.
+**Plan-of-record:** the Kiro-shaped `vdf-to-jsm-port` plan was discarded with the rest of the Kiro workflow; the rows below are the durable artifact.
 
 ## Ground rules
 
-- **VDF is authoritative.** Where `findings/steam_input.md` disagrees with the VDF (e.g. yaw-only vs Local Space), the VDF's value wins — the v13 file is what the user ultimately settled on.
+- **VDF is authoritative.** Where prior behavioral notes disagreed with the VDF (e.g. yaw-only vs Local Space), the VDF's value wins — the v13 file is what the user ultimately settled on.
 - **Two-axis grading.** *Technical translatability* (Yes / Approx / No) and *semantic fidelity* (High / Medium / Low + brief reason when below High) are kept separate so a technically-possible translation with high-loss behavior doesn't get hidden behind one averaged number.
 - **Player importance.** Stated directly as High / Med / Low with a one-line reason; this is the author's read, not a user-declared rank — correct freely.
 - **Row granularity.** One row per mechanic whose translation risk is distinct. Settings on the same Steam "page" that translate uniformly are merged; settings with divergent risk are split out.
