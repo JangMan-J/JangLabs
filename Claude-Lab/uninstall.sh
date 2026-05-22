@@ -4,8 +4,8 @@
 #   1. Removes ~/.claude/hooks/<name>.sh symlinks that point into Claude-Lab/
 #   2. Removes the CLAUDE.md fragment between sentinel comments
 #   3. Removes our hook entries from settings.json (matched by command path)
-# Does NOT remove allow/deny entries — those merged into the user's global config
-# and may have been amended by the user; left alone.
+# Symmetric with install.sh: removes exactly what it adds (hooks, the CLAUDE.md
+# fragment, the symlinks). Touches no permissions.
 
 set -Eeuo pipefail
 
@@ -104,5 +104,5 @@ fi
 if [ "$APPLY" = 0 ]; then
   echo; echo "DRY RUN. Re-run with --apply to commit."
 else
-  echo; echo "Uninstalled. Backups in $BACKUP_DIR (allow/deny entries left alone)."
+  echo; echo "Uninstalled. Backups in $BACKUP_DIR"
 fi

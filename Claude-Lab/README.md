@@ -1,16 +1,17 @@
 # Claude-Lab
 
-A Claude Code harness for this box. Five hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
+A Claude Code harness for this box. Six hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
 
 ## What it does
 
 | Layer | Mechanism | Hook event | Cost per turn |
 |-------|-----------|------------|---------------|
 | Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, pacman/yay, systemd-boot, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
-| Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service`/`paru` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
+| Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
 | Output verification | `syntax-check-touched.sh` runs `jq empty` / `python -c ast.parse` / `bash -n` etc. on touched files | `PostToolUse` (Edit/Write/MultiEdit) | 10–100ms when fires |
 | Secret-write block | `forbidden-files-guard.sh` blocks writes to `.env`, `*.key`, `*.pem`, `~/.ssh/`, `~/.gnupg/` | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
 | Config drift block | `config-drift-guard.sh` rejects settings.json edits that introduce `disableAllHooks` / `bypassPermissions` / silent `defaultMode` shifts | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
+| Memory upkeep | `memory-review-offer.sh` surfaces a "Memory Roulette" review round for an overdue `~/.claude` memory (spawns the Python engine), capped at one offer per local day | `UserPromptSubmit` | ≤1 python spawn/day, no-op otherwise |
 
 A CLAUDE.md fragment adds: a verify-before-act rule, a memory-consultation rule, a `[Method]`/`[Fumble]` reflection-trigger rule for knowledge accretion, and an LSP-trust rule.
 
@@ -19,7 +20,7 @@ A CLAUDE.md fragment adds: a verify-before-act rule, a memory-consultation rule,
 - No `Stop` hook running a polyglot repo verifier (codex's package did this; wrong cost shape for sysadmin/dotfiles work).
 - No Python interpreter spawn per tool call (pure POSIX-ish shell + jq).
 - No CI workflow / pre-commit / Makefile additions.
-- No silent mutation of `permissions.defaultMode` or any bypass flag.
+- No writes to `permissions` at all — not `allow`/`deny`, not `defaultMode`, not any bypass flag. Permission posture stays the user's.
 - No MCP servers added.
 - No skills pre-created. Skills should crystallize from observed Nth-session patterns, not anticipated ones.
 
@@ -39,7 +40,7 @@ Idempotent. Backups land in `Claude-Lab/.install-backups/<ts>/`. Restart Claude 
 ./uninstall.sh --apply       # commit
 ```
 
-Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `settings.json`. Leaves `permissions.allow` / `permissions.deny` entries alone (they may have been amended after install).
+Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `settings.json` — symmetric with install (removes exactly what it adds). Touches no permissions.
 
 ## Files
 
@@ -50,8 +51,9 @@ Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `s
 | `hooks/syntax-check-touched.sh` | PostToolUse(Edit/Write) — narrow syntax verification |
 | `hooks/forbidden-files-guard.sh` | PreToolUse(Edit/Write) — block secret-path writes |
 | `hooks/config-drift-guard.sh` | PreToolUse(Edit/Write) — block settings weakening |
+| `hooks/memory-review-offer.sh` | UserPromptSubmit — offer a Memory Roulette round for an overdue memory, ≤1×/day |
 | `CLAUDE.md.fragment` | Appended to `~/.claude/CLAUDE.md` between sentinels |
-| `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (allow/deny + hooks) |
+| `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (hooks only) |
 | `install.sh`, `uninstall.sh` | Idempotent dry-run-by-default |
 
 ## Iteration

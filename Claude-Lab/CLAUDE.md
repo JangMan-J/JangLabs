@@ -2,7 +2,7 @@
 
 ## What lives here
 
-Hook scripts + CLAUDE.md fragment + settings fragment that together constitute the Claude Code harness for this box. Installed globally to `~/.claude/` via `install.sh`. See `README.md` for what each file does.
+Hook scripts + a CLAUDE.md fragment + a hooks-only settings fragment that together constitute the Claude Code harness for this box. Installed globally to `~/.claude/` via `install.sh`. See `README.md` for what each file does.
 
 ## Working in this lab
 
@@ -21,8 +21,7 @@ Hook scripts + CLAUDE.md fragment + settings fragment that together constitute t
 |--------|-------|
 | New hook script | `hooks/<name>.sh` + register in `settings.global.fragment.json` |
 | New CLAUDE.md rule (global) | `CLAUDE.md.fragment` (between sentinels) |
-| New global allow/deny entry | `settings.global.fragment.json` `permissions.allow`/`.deny` |
-| Per-project allowlist | NOT here — that's `<project>/.claude/settings.json` |
+| Permission allow/deny | NOT here — the harness never manages permissions. Per-project: `<project>/.claude/settings.json`; global: edit `~/.claude/settings.json` by hand |
 | Skill (Nth-session pattern crystallization) | Use `skill-creator` plugin; place under `~/.claude/skills/` (out of this lab) |
 | Finding (e.g. "hook X interacts unexpectedly with feature Y") | `findings/<topic>.md` (create dir on first finding) |
 
@@ -30,5 +29,5 @@ Hook scripts + CLAUDE.md fragment + settings fragment that together constitute t
 
 - **Idempotent install/uninstall** with dry-run default. The user runs auto mode by choice; surprising state changes are not acceptable.
 - **Backups are per-run timestamped under `.install-backups/<ts>/` and `.uninstall-backups/<ts>/`.** Add these to `.gitignore` if not already.
-- **No permission-mode mutation.** `install.sh` must never write `defaultMode`, `disableAllHooks`, `disableBypassPermissionsMode`, `disableAutoMode`, or any equivalent. The `config-drift-guard` enforces this from the runtime side; install.sh enforces it from the install side.
+- **No permission mutation at all.** The harness never writes to `permissions` — not `allow`/`deny`, not `defaultMode`, not `disableAllHooks` / `disableBypassPermissionsMode` / `disableAutoMode` or any equivalent. Permission posture is the user's alone. The `config-drift-guard` enforces this from the runtime side; install.sh enforces it from the install side. (An allow/deny list briefly lived in the settings fragment — it was scope-creep, never the harness's purpose, and was removed.)
 - **No skills pre-created.** Wait for a recurring pattern to crystallize across Nth sessions before promoting.

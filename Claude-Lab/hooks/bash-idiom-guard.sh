@@ -11,17 +11,12 @@ cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null ||
 match() { printf '%s' "$cmd" | grep -qE "$1"; }
 
 if match '(^|[;&|]\s*)(apt|apt-get)\s+(install|update|upgrade|remove|purge|autoremove|search)'; then
-  echo "bash-idiom-guard: 'apt' is not present on this Arch box. Repos: 'pacman -S <pkg>' / 'pacman -Syu'. AUR: 'yay -S <pkg>' (paru is NOT installed despite older notes)." >&2
+  echo "bash-idiom-guard: 'apt' is not present on this Arch box. Repos: 'pacman -S <pkg>' / 'pacman -Syu'. AUR: 'paru -S <pkg>' or 'yay -S <pkg>'." >&2
   exit 2
 fi
 
 if match '(^|[;&|]\s*)(yum|dnf)\s+'; then
-  echo "bash-idiom-guard: 'yum'/'dnf' is not present on this Arch box. Use 'pacman' for repos, 'yay' for AUR." >&2
-  exit 2
-fi
-
-if match '(^|[;&|]\s*)paru\b'; then
-  echo "bash-idiom-guard: 'paru' is not installed on this box (despite older notes). For repos: 'pacman -S <pkg>'. For AUR: 'yay -S <pkg>'. See [Fumble] paru memory." >&2
+  echo "bash-idiom-guard: 'yum'/'dnf' is not present on this Arch box. Use 'pacman' for repos, 'paru'/'yay' for AUR." >&2
   exit 2
 fi
 

@@ -1,20 +1,20 @@
 # --- begin Claude-Lab harness fragment ---
-# Managed by /home/jangman/Projects/Jangs-Lab/Claude-Lab/install.sh.
+# Managed by this Claude-Lab checkout's install.sh (absolute path rewritten on install).
 # To regenerate: edit Claude-Lab/CLAUDE.md.fragment and re-run install.sh --apply.
 
-## System fingerprint (immutable facts of this box)
+## System environment (live values come from the per-turn fingerprint)
 
-- OS: Arch Linux. Package manager: **pacman** for official repos, **yay** for AUR. NOT apt/yum/dnf. (Note: `paru` is *not* installed on this box despite what older notes may say — this was a `[Fumble]` caught while building this harness.)
-- Boot: **systemd-boot**. NOT GRUB. Updates via `bootctl` / `kernel-install` (rare).
-- Init: systemd. Use `systemctl`, not `service` / `update-rc.d`.
-- Shell: zsh. Bash is available but not default. Prefer POSIX-portable scripts; if bash-only, shebang `#!/usr/bin/env bash` and assume bash.
-- Desktop: KDE Plasma on **Wayland**. X11 assumptions break here.
-- GPU: NVIDIA proprietary driver.
-- A `UserPromptSubmit` hook (`~/.claude/hooks/system-fingerprint.sh`) re-injects current kernel/session/version every turn — read it; do not re-derive.
+The `UserPromptSubmit` hook (`~/.claude/hooks/system-fingerprint.sh`) re-injects the **current** distro, kernel, shell, session/desktop, package manager, init system, bootloader, GPU, and tool versions every turn. **Read that block for the specific values — do not hardcode them here or guess them from training data.** This harness installs on more than one box and they differ (e.g. CachyOS vs. stock Arch, fish vs. zsh logins), and earlier hardcoded copies in this file had silently rotted — so trust the live fingerprint, not prose. Only the behavior below is host-independent:
+
+- **Packages:** use the manager and install verb the fingerprint reports; don't default to `apt` (or to `pacman`) out of habit. On Arch-family boxes it also names the AUR helper.
+- **Services/init:** use what the fingerprint reports — `systemctl` for systemd, `rc-service`/`rc-update` for OpenRC, `sv` for runit. Don't assume `systemctl` exists.
+- **Bootloader:** reported by the fingerprint (systemd-boot via the EFI `LoaderInfo` var, else GRUB). Bootloader/kernel changes are rare — verify before touching.
+- **Shell:** the fingerprint reads the login shell from passwd, *not* `$SHELL` (which can be stale). If it's **fish**, fish is not POSIX — interactive commands you hand the user need fish syntax (`set -x VAR val`, not `export VAR=val`); committed scripts still use `#!/usr/bin/env bash`.
+- **Session/desktop & GPU:** as reported. Under Wayland, X11-only assumptions break. Don't assume the NVIDIA kernel-module flavor — Arch ships `nvidia-open*` by default now.
 
 ## Verify-before-act
 
-Before invoking a CLI you have not used in this session, or writing a config you have not validated, run `command -v X && X --help | head` (or `man X`). Do not assume flag/syntax from training data when verification is one shell call away. The fabrication-vs-verification cost imbalance is the single largest source of bad output on this box.
+Before invoking a CLI you have not used in this session, or writing a config you have not validated, run `command -v X && X --help | head` (or `man X`). Do not assume flag/syntax from training data when verification is one shell call away. The fabrication-vs-verification cost imbalance is the single largest source of bad output on this box. A confident "what's on this box" belief is often a training-data guess that one command falsifies — e.g. assuming a stock kernel when `uname -r` carries a `-cachyos`/`-zen`/`-lts` suffix (which changes the `*-headers` package DKMS needs), or assuming `apt` on a non-Debian box. Spend the `command -v` / `uname` / package query before asserting.
 
 For library/framework/CLI API surface, query **context7** before writing code. Do not guess flags, function signatures, or version-specific behavior. Context7 is loaded for this reason.
 

@@ -3,10 +3,11 @@
 # What it does:
 #   1. Symlinks Claude-Lab/hooks/*.sh into ~/.claude/hooks/
 #   2. Appends Claude-Lab/CLAUDE.md.fragment to ~/.claude/CLAUDE.md (between sentinels; replaces if present)
-#   3. Merges Claude-Lab/settings.global.fragment.json into ~/.claude/settings.json
-#      - dedupes permissions.allow / permissions.deny arrays
+#   3. Merges the hooks block of Claude-Lab/settings.global.fragment.json into ~/.claude/settings.json
+#      - rewrites each hook command to $HOME/.claude/hooks (host-agnostic; ignores
+#        whatever literal dir the fragment stores)
 #      - adds hook entries that aren't already registered (matched by command path)
-#      - NEVER touches permissions.defaultMode, disableAllHooks, bypassPermissions, etc.
+#      - NEVER touches permissions (allow/deny/defaultMode) or any bypass flag
 #   4. Backs up modified files to Claude-Lab/.install-backups/<ts>/
 
 set -Eeuo pipefail
@@ -29,6 +30,10 @@ CLAUDE_MD=$CLAUDE_HOME/CLAUDE.md
 SETTINGS=$CLAUDE_HOME/settings.json
 TS=$(date +%Y%m%d-%H%M%S)
 BACKUP_DIR=$LAB_DIR/.install-backups/$TS
+
+TMP_FILES=()
+cleanup() { for f in "${TMP_FILES[@]:-}"; do [ -n "$f" ] && rm -f "$f"; done; }
+trap cleanup EXIT
 
 command -v jq >/dev/null || { echo "install requires jq" >&2; exit 1; }
 
@@ -66,7 +71,11 @@ done
 
 # ----------------- 2. CLAUDE.md fragment -----------------
 say "==> CLAUDE.md"
-FRAGMENT=$LAB_DIR/CLAUDE.md.fragment
+# Normalize the "Managed by ..." line to this checkout's real path (host-agnostic).
+FRAGMENT_SRC=$LAB_DIR/CLAUDE.md.fragment
+FRAGMENT=$(mktemp)
+TMP_FILES+=("$FRAGMENT")
+sed -E "s|^# Managed by .*|# Managed by ${LAB_DIR}/install.sh.|" "$FRAGMENT_SRC" > "$FRAGMENT"
 BEGIN_TAG='# --- begin Claude-Lab harness fragment ---'
 END_TAG='# --- end Claude-Lab harness fragment ---'
 
@@ -99,24 +108,28 @@ say "==> settings.json"
 FRAG_JSON=$LAB_DIR/settings.global.fragment.json
 [ -f "$FRAG_JSON" ] || { echo "missing $FRAG_JSON" >&2; exit 1; }
 
+# Rewrite each hook command to this host's hooks dir, regardless of the literal
+# path stored in the fragment (host-agnostic install).
+FRAG_FIXED=$(mktemp)
+TMP_FILES+=("$FRAG_FIXED")
+jq --arg hd "$HOOKS_DST" '
+  .hooks |= with_entries(
+    .value |= map(.hooks |= map(.command = ($hd + "/" + (.command | split("/") | last))))
+  )
+' "$FRAG_JSON" > "$FRAG_FIXED"
+
 MERGED=$(jq -s '
-  def union_dedup($a; $b): ($a + $b) | unique_by(.) ;
   def add_hook_unique($existing; $new):
     ($existing // []) as $cur
-    | ($new | map(.hooks[0].command)) as $new_cmds
     | $cur + ($new | map(select(.hooks[0].command as $c | ($cur | map(.hooks[0].command)) | index($c) | not))) ;
 
   .[0] as $cur | .[1] as $frag
   | $cur
-  | .permissions = ((.permissions // {}) | . + {
-      allow: union_dedup(.allow // []; $frag.permissions.allow // []),
-      deny:  union_dedup(.deny  // []; $frag.permissions.deny  // [])
-    })
   | .hooks = ((.hooks // {}) as $h
       | reduce ($frag.hooks | keys[]) as $event ($h;
           .[$event] = add_hook_unique($h[$event]; $frag.hooks[$event])
         ))
-' "$SETTINGS" "$FRAG_JSON")
+' "$SETTINGS" "$FRAG_FIXED")
 
 if [ -f "$SETTINGS" ] && [ "$(echo "$MERGED" | jq -S .)" = "$(jq -S . < "$SETTINGS")" ]; then
   say "ok: settings.json already up to date"
