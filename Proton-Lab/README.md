@@ -36,7 +36,7 @@ docs/
 
 ## Use
 
-Lives at `~/Projects/Jangs-Lab/protondb-tuner/` and is installed as a personal skill at `~/.claude/skills/protondb-tuner` (symlink → this directory). In Claude Code:
+Lives at `~/Projects/Jangs-Lab/Proton-Lab/` (the skill itself is named `protondb-tuner`) and is installed as a personal skill at `~/.claude/skills/protondb-tuner` (symlink → this directory). In Claude Code:
 
 ```
 /protondb-tuner arc raiders
