@@ -1,0 +1,3015 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-05-23",
+  "title": "protondb-tuner semantic annotations",
+  "purpose": "Domain-knowledge layer for the protondb-tuner recommender. The statistical engine decides WHICH launchOptions parameters are empirically relevant to a game; this file supplies the MEANING, INTENT, and RISK of each parameter so the recommender can explain a suggestion and downrank stale or dangerous advice. Every record is authored from primary documentation (see doc_sources), not from a single ProtonDB report.",
+  "consumption_notes": [
+    "parameters is a flat list; iterate and match the engine's normalized key against match.regex (case-insensitive, Python re).",
+    "match.canonical_key is the exact variable/flag/wrapper token. match.aliases lists other spellings seen in the wild.",
+    "All enum-valued fields draw from the top-level `enums` block; treat any value outside those sets as a data error.",
+    "obsolescence.status of 'obsolete' / 'superseded' / 'default-now' means the recommender should downrank or annotate the advice as stale.",
+    "confidence reflects documentation strength for THIS annotation, not how often the parameter appears in data."
+  ],
+  "engine_integration": {
+    "summary": "scripts/common.py emits param_ids shaped 'namespace|key|value'. Match this KB by applying each record's match.regex to the engine's `key` (and, for the proton/shellhack namespaces, the `value`). The mapping below is the join contract.",
+    "namespace_map": {
+      "env": {
+        "engine_key": "the environment variable name verbatim (e.g. 'DXVK_ASYNC', 'PROTON_USE_WINED3D')",
+        "matches_kind": "env",
+        "note": "Regex is tested against the key. Values are normalized by clean_value(): booleans -> '0'/'1'; BUCKET_VARS (WINEDLLOVERRIDES, DXVK_FILTER_DEVICE_NAME, WINE_CPU_TOPOLOGY, PROTON_LOG, *_CONFIG_FILE, *_CACHE_PATH, ...) -> '<custom>'; NUM_VARS (DXVK_FRAME_RATE, ...) -> '<num>'; comma-sets sorted order-insensitively (e.g. VKD3D_CONFIG=dxr,dxr11 -> 'dxr,dxr11'). Match on key, not value."
+      },
+      "wrapper": {
+        "engine_key": "lowercased wrapper binary name",
+        "matches_kind": "wrapper",
+        "engine_wrapper_set": [
+          "gamemoderun",
+          "mangohud",
+          "mangoapp",
+          "gamescope",
+          "game-performance",
+          "prime-run",
+          "primusrun",
+          "optirun",
+          "obs-gamecapture",
+          "obs-vkcapture",
+          "strangle",
+          "libstrangle",
+          "taskset",
+          "nice",
+          "umu-run",
+          "steam-run",
+          "pressure-vessel-wrap",
+          "vblank_mode",
+          "switcherooctl"
+        ],
+        "note": "'game-performance' is CachyOS's OWN wrapper and has its own record (game_performance) — distinct from gamemoderun (Feral GameMode); do NOT collapse them. 'mangoapp' -> mangohud. 'primusrun'/'optirun' are legacy Optimus offload -> map to the prime-run / gpu-offload-hybrid record. taskset/nice are CPU-pinning wrappers (cpu-scheduling). umu-run/steam-run/pressure-vessel-wrap are Steam-Linux-Runtime / container launchers (no annotation here; benign — they set up the sniper/RT3 container described in user_environment.runtime_container)."
+      },
+      "arg": {
+        "engine_key": "lowercased post-%command% game argument (e.g. '-dx11', '-useallavailablecores', '-nobattleye'); dotted UE cvars kept lowercased",
+        "matches_kind": "game-arg",
+        "note": "Game-arg regexes in this KB are (?i) and anchor on the leading dash/slash."
+      },
+      "shellhack": {
+        "engine_key": "a classification token for shell metaprogramming (eval/sed/awk/backtick/$()/&&/exec/...)",
+        "matches_kind": "launch-pattern",
+        "note": "Maps to launch_pattern_exe_swap (category anti-cheat-or-drm). The engine also force-keeps EAC/BattlEye runtime detection when a shellhack is present."
+      },
+      "proton": {
+        "engine_keys": [
+          "variant:official",
+          "variant:experimental",
+          "variant:ge",
+          "variant:native",
+          "custom",
+          "notes_version"
+        ],
+        "matches_kind": "proton-runtime",
+        "note": "variant:* comes from the structured `variant` field; `custom` carries a normalized build name (e.g. 'GE-Proton10-25', 'proton-cachyos-...'); `notes_version` carries version tokens mined from free-text notes ('GE-Proton10-25', 'Proton-7.0', 'Proton-experimental'). The proton_variant_* records' regexes match BOTH these engine tokens and human spellings. variant:native = a native Linux build (no Proton); this KB has no record for it (nothing to tune).",
+        "precedence": "A numbered version token (e.g. 'Proton-7.0') can match BOTH proton_variant_pinned_older and proton_variant_official_stable. Resolve by major version: <=8 -> proton_variant_pinned_older (it is now an old/regression-workaround pin); >=9 -> proton_variant_official_stable. GE/CachyOS build names (which contain 'GE-Proton'/'cachyos') should resolve to their dedicated records even though they also embed digits."
+      }
+    },
+    "kind_to_namespace": {
+      "env": "env",
+      "wrapper": "wrapper",
+      "game-arg": "arg",
+      "launch-pattern": "shellhack",
+      "proton-runtime": "proton",
+      "compat-config": "env (Proton compat-config tokens also surface as PROTON_* env vars; see aliases)"
+    }
+  },
+  "anti_cheat_guidance": {
+    "summary": "Anti-cheat advice is asymmetric by regime; the recommender must gate on online-vs-offline before surfacing any anti-cheat-or-drm parameter.",
+    "rules": [
+      "If the title's anti-cheat is DEVELOPER-ENABLED and accepted on Linux (EAC/BattlEye officially supported — e.g. ARC Raiders, Steam Deck Verified Nov 2025 on Proton 10), it works online out of the box. The runtime is provided automatically; do NOT recommend an EAC/BattlEye launch flag (absence of one is expected) and NEVER recommend a bypass — bypassing or exe-swapping anti-cheat for an ONLINE title risks an account ban and gains nothing.",
+      "Bypass tokens (game_arg_eac_nop, game_arg_no_battleye, launch_pattern_exe_swap) are acceptable ONLY for offline/singleplayer use of titles whose anti-cheat is NOT enabled/accepted on Linux for online play. There they let the game launch; they do not enable online multiplayer.",
+      "For any bypass token applied to an online context, treat parity_risk as high with the failure mode = account ban, and warn explicitly.",
+      "Per the protondb-config-inference regime split: anti-cheat acceptance is exogenous (publisher/vendor-gated) and recency-sensitive (acceptance can flip on a patch date), so present it as a recency-windowed playable/ban-risk flag, NOT as a config recommendation."
+    ]
+  },
+  "user_environment": {
+    "gpu": "NVIDIA GeForce RTX 4090 (Ada, laptop)",
+    "nvidia_kernel_module": "open kernel module (nvidia-open flavor), version 595.71.05",
+    "topology": "Intel iGPU + NVIDIA dGPU hybrid laptop (Optimus / muxless; PRIME render offload)",
+    "display_server": "Wayland",
+    "desktop": "KDE Plasma",
+    "distro": "CachyOS (Arch-based)",
+    "runtime_container": "Modern Proton (8.0+, including GE-Proton and proton-cachyos) runs inside the Steam Linux Runtime 3.0 'sniper' container (RT3) via pressure-vessel. This is the normal execution context, not a parameter to tune; it provides a stable library environment regardless of host distro. Wrapper tokens umu-run/steam-run/pressure-vessel-wrap relate to entering this container and are benign.",
+    "scope_implications": [
+      "nvidia-only and frame-generation/upscaling (DLSS) records are directly applicable; amd-only / mesa-only RADV records are NOT (no AMD dGPU present) and should be suppressed unless the user later runs on the Intel iGPU via Mesa ANV.",
+      "hybrid-laptop records (prime-run, __NV_PRIME_RENDER_OFFLOAD, DRI_PRIME) are highly relevant: by default a game may render on the weak Intel iGPU unless offload is forced.",
+      "display-wayland records (PROTON_ENABLE_WAYLAND, noopwr) are relevant because the session is Wayland, where some X11-era assumptions break.",
+      "The open NVIDIA kmod supports NVAPI/DLSS/Reflex and the VK_NV_low_latency2 path; frame-gen workarounds in the vkd3d/dxvk-nvapi records apply."
+    ]
+  },
+  "enums": {
+    "kind": [
+      "env",
+      "wrapper",
+      "game-arg",
+      "proton-runtime",
+      "compat-config",
+      "launch-pattern"
+    ],
+    "value_type": [
+      "boolean",
+      "enum",
+      "integer",
+      "string",
+      "path",
+      "list",
+      "flag",
+      "selection"
+    ],
+    "intent_type": [
+      "how",
+      "why",
+      "both"
+    ],
+    "category": [
+      "proton-runtime-selection",
+      "anti-cheat-or-drm",
+      "dxvk-rendering",
+      "vkd3d-d3d12",
+      "nvidia-feature",
+      "amd-mesa",
+      "gpu-offload-hybrid",
+      "shader-cache-stutter",
+      "frame-generation",
+      "upscaling",
+      "wine-dll-modding",
+      "launcher-or-ux",
+      "cpu-scheduling",
+      "display-wayland",
+      "monitoring-overlay",
+      "wine-sync",
+      "wine-compat-workaround"
+    ],
+    "effect_axis": [
+      "native-parity",
+      "visual-fidelity",
+      "performance"
+    ],
+    "direction": [
+      "improves",
+      "degrades",
+      "mixed",
+      "neutral",
+      "enables"
+    ],
+    "parity_risk": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "obsolescence_status": [
+      "current",
+      "partial",
+      "superseded",
+      "obsolete",
+      "default-now"
+    ],
+    "hardware_scope": [
+      "universal",
+      "nvidia-only",
+      "amd-only",
+      "intel-only",
+      "hybrid-laptop",
+      "mesa-only",
+      "steam-deck",
+      "amd-and-nvidia"
+    ],
+    "confidence": [
+      "high",
+      "medium",
+      "low"
+    ]
+  },
+  "field_glossary": {
+    "id": "Stable snake_case primary key. Never reused; safe to reference from the recommender.",
+    "match": "How to recognize this parameter in normalized launchOptions: canonical_key, aliases[], regex.",
+    "kind": "Structural type of the token (env var, wrapper binary, game CLI arg, runtime choice, compat config token, or shell launch pattern).",
+    "value_type": "Shape of the value the token carries.",
+    "values": "Documented accepted values, when finite.",
+    "description": "Self-authored plain-language explanation of what the parameter does.",
+    "intent_type": "'how' = its benefit is self-evident once named (better visuals or smoother runtime). 'why' = it exists to satisfy an external constraint (anti-cheat acceptance, DRM/launcher quirk, a known crash/regression workaround) that the user would not otherwise infer. 'both' = primary set in intent_type plus an intent_note.",
+    "intent_note": "Required for 'why' and 'both': names the external mechanism so the recommender can explain it.",
+    "category": "Coarse grouping for filtering and display.",
+    "effect_axes": "Which of {native-parity, visual-fidelity, performance} it moves, and the direction. 'enables' means it gates whether the title functions at all.",
+    "parity_risk": "Likelihood it DEGRADES native parity / introduces instability or a regression. Paired with parity_risk_rationale.",
+    "obsolescence": "Whether the advice is still live. status + since + note.",
+    "hardware_scope": "Which hardware the parameter is meaningful on.",
+    "confidence": "Strength of documentation behind THIS annotation.",
+    "doc_sources": "Primary URLs consulted."
+  },
+  "parameters": [
+    {
+      "id": "proton_variant_official_stable",
+      "match": {
+        "canonical_key": "proton-stable",
+        "aliases": [
+          "Proton 9.0",
+          "Proton 10.0",
+          "official",
+          "Steam Linux Runtime",
+          "variant:official",
+          "notes_version=Proton-9.0"
+        ],
+        "regex": "(?i)\\bvariant:official\\b|\\bproton[\\s_-]?(\\d+\\.\\d+|stable|official)\\b"
+      },
+      "kind": "proton-runtime",
+      "value_type": "selection",
+      "description": "Valve's shipped, version-pinned Proton track selected in the per-game compatibility dropdown. It is the most tested baseline: Valve QAs it against a large title set and it carries the EAC/BattlEye bootstrap. Choosing it is the conservative default when a game is not known to need newer fixes.",
+      "intent_type": "how",
+      "intent_note": "Picking the runtime is itself a parameter: stable trades the newest fixes for predictability.",
+      "category": "proton-runtime-selection",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Most-tested track; the safe fallback, rarely the cause of a regression.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Track number advances; treat 'latest stable' as a moving target."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_variant_experimental",
+      "match": {
+        "canonical_key": "proton-experimental",
+        "aliases": [
+          "Proton Experimental",
+          "experimental",
+          "variant:experimental",
+          "notes_version=Proton-experimental"
+        ],
+        "regex": "(?i)\\bvariant:experimental\\b|\\bproton[\\s_-]?experimental\\b"
+      },
+      "kind": "proton-runtime",
+      "value_type": "selection",
+      "description": "Valve's rolling bleeding-edge Proton branch. Fixes for a specific game often land here weeks or months before they reach a numbered stable release, so a report that says 'works on Experimental' usually means a recent fix is required. Less predictable than stable because it changes frequently.",
+      "intent_type": "both",
+      "intent_note": "why: a report selecting Experimental usually signals the game needs a not-yet-stable fix; the recommender should treat it as 'needs recent code' rather than a generic perf bump.",
+      "category": "proton-runtime-selection",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Newer fixes help more than they hurt, but the branch moves daily so behavior can shift between sessions.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Fixes graduate into numbered stable; an old 'needs Experimental' note may now be satisfied by current stable."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_variant_ge",
+      "match": {
+        "canonical_key": "GE-Proton",
+        "aliases": [
+          "Proton-GE",
+          "GloriousEggroll",
+          "proton-ge-custom",
+          "variant:ge",
+          "custom=GE-Proton10-25"
+        ],
+        "regex": "(?i)\\bvariant:ge\\b|ge[\\s_-]?proton|proton[\\s_-]?ge"
+      },
+      "kind": "proton-runtime",
+      "value_type": "selection",
+      "description": "A community build by GloriousEggroll that layers extra patches and media codecs onto Valve Proton: bundled FFmpeg/Media Foundation for video playback, additional game-specific hacks, newer DXVK/VKD3D, and often DLSS/FSR upgrade plumbing. Installed manually (not via Steam) and selected from the dropdown.",
+      "intent_type": "both",
+      "intent_note": "why: frequently chosen to satisfy a concrete external need (in-game video that black-screens on stock Proton because of missing Media Foundation, or a game-specific patch not yet upstream), not merely for raw speed.",
+      "category": "proton-runtime-selection",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        },
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Broadly stable and popular, but it is not Valve-QA'd and bundles non-default patches, so a regression is occasionally GE-specific.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Versioned (e.g. GE-Proton10-x); pin notes age as upstream Proton absorbs the same fixes."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/GloriousEggroll/proton-ge-custom",
+        "https://www.gamingonlinux.com/2023/01/ge-proton-removes-the-dxvk-async-patch-in-version-7-45/"
+      ]
+    },
+    {
+      "id": "proton_variant_cachyos",
+      "match": {
+        "canonical_key": "proton-cachyos",
+        "aliases": [
+          "CachyOS Proton",
+          "proton-cachyos",
+          "custom=proton-cachyos"
+        ],
+        "regex": "(?i)proton[\\s_-]?cachyos|cachyos[\\s_-]?proton"
+      },
+      "kind": "proton-runtime",
+      "value_type": "selection",
+      "description": "A performance-tuned Proton build from the CachyOS project, compiled with aggressive optimizations and carrying the latest DXVK/VKD3D plus FSR4/DLSS upgrade support. Directly relevant on this CachyOS box and often the locally recommended track.",
+      "intent_type": "how",
+      "intent_note": "why: like GE, it can also be chosen to pull in a fix or upscaler upgrade not yet in stock Proton.",
+      "category": "proton-runtime-selection",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Not Valve-QA'd; aggressive build flags are generally safe but occasionally expose a build-specific issue.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Rolling; tracks upstream closely."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/CachyOS/proton-cachyos/releases",
+        "https://wiki.cachyos.org/configuration/gaming/"
+      ]
+    },
+    {
+      "id": "proton_variant_pinned_older",
+      "match": {
+        "canonical_key": "proton-older",
+        "aliases": [
+          "Proton 7.0",
+          "Proton 8.0",
+          "Proton 6.3",
+          "older",
+          "variant:older",
+          "notes_version=Proton-7.0"
+        ],
+        "regex": "(?i)\\bvariant:older\\b|\\bproton[\\s_-]?[5-8][.\\-]\\d+\\b"
+      },
+      "kind": "proton-runtime",
+      "value_type": "selection",
+      "description": "Deliberately running an OLD Proton version. This is almost always a workaround: a later Proton introduced a regression for that specific title (a renderer change, a sync change, an anti-cheat bootstrap change) and an earlier version is the last one that worked.",
+      "intent_type": "why",
+      "intent_note": "Exists to dodge a known regression introduced in a newer Proton; the older version is not 'better', it is the last-good one for this game. Heavily recency-sensitive — the regression is often fixed later, making the pin stale.",
+      "category": "proton-runtime-selection",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "An old runtime lacks later security/compat/perf fixes; useful only for the specific regression it sidesteps, and that regression is often since-fixed.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "varies",
+        "note": "Pins age fast; verify the cited regression is still present before recommending an old version."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "gamemoderun",
+      "match": {
+        "canonical_key": "gamemoderun",
+        "aliases": [
+          "gamemode",
+          "/usr/bin/gamemoderun"
+        ],
+        "regex": "(?i)\\bgamemoderun\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "flag",
+      "description": "Feral Interactive's GameMode launcher. Prepended before %command%, it asks the gamemoded daemon to apply temporary host tweaks while the game runs: switch the CPU governor to performance, raise process priority/niceness and I/O priority, and (optionally) pin the GPU to its high-performance power profile, reverting everything on exit.",
+      "intent_type": "how",
+      "intent_note": "Originally a stop-gap for the powersave/ondemand CPU governors causing frame-time variance.",
+      "category": "cpu-scheduling",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Tweaks are temporary and reverted on exit; downside is negligible, gains are modest and hardware-dependent.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Still useful; magnitude shrinks on systems already running a performance/schedutil governor."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/FeralInteractive/gamemode",
+        "https://wiki.archlinux.org/title/GameMode"
+      ]
+    },
+    {
+      "id": "game_performance",
+      "match": {
+        "canonical_key": "game-performance",
+        "aliases": [
+          "cachyos game-performance"
+        ],
+        "regex": "(?i)\\bgame-performance\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "flag",
+      "description": "CachyOS's own performance wrapper (ships in CachyOS-Settings as /usr/bin/game-performance). Prepended before %command%, it asks power-profiles-daemon to switch to the 'performance' power profile for the duration of the game — raising platform power limits and putting the CPU governor in performance mode — then restoring the previous profile on exit. It is a SEPARATE tool from Feral GameMode (gamemoderun): CachyOS documentation explicitly recommends using game-performance INSTEAD of GameMode on CachyOS, and the two should not be stacked.",
+      "intent_type": "how",
+      "intent_note": "Same goal as gamemoderun (hold the system in a high-performance power state during play) but implemented via power-profiles-daemon and provided by CachyOS rather than Feral. Directly relevant on this CachyOS box, where it is the preferred wrapper.",
+      "category": "cpu-scheduling",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Temporary power-profile switch, reverted on exit; downside is higher power draw/heat while active. Redundant if stacked with gamemoderun.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active and CachyOS-recommended over GameMode. Requires power-profiles-daemon; a no-op or missing on non-CachyOS systems without the script."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/CachyOS/CachyOS-Settings/blob/master/usr/bin/game-performance",
+        "https://wiki.cachyos.org/configuration/gaming/"
+      ]
+    },
+    {
+      "id": "mangohud",
+      "match": {
+        "canonical_key": "mangohud",
+        "aliases": [
+          "MANGOHUD=1",
+          "mangoapp"
+        ],
+        "regex": "(?i)\\bmangohud\\b|\\bMANGOHUD=1\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "flag",
+      "description": "A Vulkan/OpenGL overlay that draws FPS, frame-time graph, CPU/GPU load, temperatures and clocks on top of the running game, and can log those metrics for benchmarking. It measures; it does not change game behavior.",
+      "intent_type": "how",
+      "intent_note": "Pure observability — present in launchOptions for diagnosis, not for any perf or visual gain (it costs a tiny amount).",
+      "category": "monitoring-overlay",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Overlay only; negligible overhead and no parity impact.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://wiki.archlinux.org/title/MangoHud"
+      ]
+    },
+    {
+      "id": "gamescope",
+      "match": {
+        "canonical_key": "gamescope",
+        "aliases": [
+          "gamescope -W",
+          "gamescope -f",
+          "-F fsr",
+          "--fsr-upscaling"
+        ],
+        "regex": "(?i)\\bgamescope\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "string",
+      "description": "A micro-compositor that runs the game inside its own nested Wayland session, then composites the result into your desktop. Common args: -W/-H set the game's internal render resolution, -w/-h the output window size, -f fullscreen, -r FPS cap, -F fsr or --fsr-upscaling to upscale a low internal resolution with AMD FSR 1.0, and -e for Steam integration. It decouples render resolution from display resolution and gives a stable fullscreen surface.",
+      "intent_type": "both",
+      "intent_note": "why: also a workaround layer — it fixes broken alt-tab/fullscreen behavior, forces a resolution a game refuses to honor, and enables HDR or integer scaling without native game support. The FSR-upscaling use is the 'how' (perf via lower internal res).",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "visual-fidelity",
+          "direction": "mixed"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Adds a composition + scaling hop that can cost latency or introduce blur/scaling artifacts if args are wrong; can conflict with the Steam overlay. Net positive when used to solve a specific windowing problem.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; FSR1 in gamescope is dated vs in-engine FSR2/3/4 but still useful for arbitrary games."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/gamescope",
+        "https://wiki.archlinux.org/title/Gamescope"
+      ]
+    },
+    {
+      "id": "prime_run",
+      "match": {
+        "canonical_key": "prime-run",
+        "aliases": [
+          "primerun",
+          "/usr/bin/prime-run"
+        ],
+        "regex": "(?i)\\bprime-run\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "flag",
+      "description": "A tiny wrapper script from nvidia-prime that exports the PRIME render-offload variables (__NV_PRIME_RENDER_OFFLOAD=1, __GLX_VENDOR_LIBRARY_NAME=nvidia, __VK_LAYER_NV_optimus=NVIDIA_only) so the wrapped program renders on the discrete NVIDIA GPU instead of the integrated one.",
+      "intent_type": "why",
+      "intent_note": "External constraint: on a muxless hybrid laptop the display is wired to the iGPU, so by default a game can run on the weak Intel GPU. prime-run exists to route rendering to the dGPU — a user wouldn't know why it's prepended without knowing the laptop is hybrid. Directly relevant to this Intel+RTX4090 machine.",
+      "category": "gpu-offload-hybrid",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Selects the intended GPU; harmless on the wrong machine (no dGPU = no-op or missing script) but essential on hybrid laptops.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Some compositors/distros now auto-offload Steam to the dGPU; the wrapper remains the explicit guarantee."
+      },
+      "hardware_scope": "hybrid-laptop",
+      "confidence": "high",
+      "doc_sources": [
+        "https://wiki.archlinux.org/title/PRIME",
+        "https://download.nvidia.com/XFree86/Linux-x86_64/440.31/README/primerenderoffload.html"
+      ]
+    },
+    {
+      "id": "nv_prime_render_offload",
+      "match": {
+        "canonical_key": "__NV_PRIME_RENDER_OFFLOAD",
+        "aliases": [
+          "__GLX_VENDOR_LIBRARY_NAME",
+          "__VK_LAYER_NV_optimus"
+        ],
+        "regex": "(?i)__NV_PRIME_RENDER_OFFLOAD"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "The underlying NVIDIA variable that prime-run sets. =1 loads the VK_LAYER_NV_optimus Vulkan layer so the NVIDIA dGPU is enumerated first; pairing with __GLX_VENDOR_LIBRARY_NAME=nvidia routes GLX, and __VK_LAYER_NV_optimus=NVIDIA_only hides the iGPU from Vulkan entirely.",
+      "intent_type": "why",
+      "intent_note": "Same hybrid-GPU offload constraint as prime-run, written out explicitly instead of via the wrapper.",
+      "category": "gpu-offload-hybrid",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Routes to the correct GPU; only matters on hybrid setups.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active NVIDIA offload mechanism."
+      },
+      "hardware_scope": "hybrid-laptop",
+      "confidence": "high",
+      "doc_sources": [
+        "https://download.nvidia.com/XFree86/Linux-x86_64/440.31/README/primerenderoffload.html",
+        "https://wiki.archlinux.org/title/PRIME"
+      ]
+    },
+    {
+      "id": "dri_prime",
+      "match": {
+        "canonical_key": "DRI_PRIME",
+        "aliases": [
+          "DRI_PRIME=1"
+        ],
+        "regex": "(?i)\\bDRI_PRIME\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "0",
+        "1",
+        "pci-xxxx_xx_xx_x"
+      ],
+      "description": "The Mesa/open-driver equivalent of PRIME offload: DRI_PRIME=1 (or a specific PCI device tag) tells GLVND/Vulkan to render on the non-default GPU. Used for AMD/Intel dGPUs and for Intel-iGPU<->discrete routing under Mesa drivers.",
+      "intent_type": "why",
+      "intent_note": "Hybrid-GPU offload for the Mesa stack. On this box only meaningful for routing between Intel iGPU contexts; NVIDIA offload uses the __NV_* variables, not DRI_PRIME.",
+      "category": "gpu-offload-hybrid",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Selects GPU; safe, scoped to multi-GPU/Mesa setups.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active for Mesa drivers."
+      },
+      "hardware_scope": "hybrid-laptop",
+      "confidence": "high",
+      "doc_sources": [
+        "https://wiki.archlinux.org/title/PRIME"
+      ]
+    },
+    {
+      "id": "obs_gamecapture",
+      "match": {
+        "canonical_key": "obs-gamecapture",
+        "aliases": [
+          "obs-vkcapture",
+          "OBS_VKCAPTURE=1"
+        ],
+        "regex": "(?i)\\bobs-gamecapture\\b|\\bobs-vkcapture\\b|OBS_VKCAPTURE"
+      },
+      "kind": "wrapper",
+      "value_type": "flag",
+      "description": "Wrapper from the obs-vkcapture project. Prepended before %command%, it injects a Vulkan/OpenGL capture layer so OBS Studio can grab the game's framebuffer directly (low-overhead game capture) instead of capturing the whole screen.",
+      "intent_type": "why",
+      "intent_note": "Exists to make OBS game-capture work under Proton; nothing to do with the game's own quality — present only when the user records/streams.",
+      "category": "monitoring-overlay",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Capture layer; negligible impact, only loaded when recording.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/nowrep/obs-vkcapture"
+      ]
+    },
+    {
+      "id": "strangle",
+      "match": {
+        "canonical_key": "strangle",
+        "aliases": [
+          "libstrangle",
+          "strangle 60"
+        ],
+        "regex": "(?i)\\bstrangle\\b"
+      },
+      "kind": "wrapper",
+      "value_type": "integer",
+      "description": "libstrangle, an LD_PRELOAD-based frame-rate limiter (e.g. 'strangle 60 %command%' caps to 60 FPS). A lightweight alternative to a driver- or engine-level cap, sometimes used to reduce heat/coil-whine or smooth frame pacing.",
+      "intent_type": "how",
+      "intent_note": "Caps frame rate for smoothness/thermals.",
+      "category": "monitoring-overlay",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Limiter only; can add minor latency. Largely superseded by DXVK/VKD3D/MangoHud and in-engine caps.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "ongoing",
+        "note": "Older tool; DXVK_FRAME_RATE / VKD3D_FRAME_RATE / mangohud fps_limit cover most needs now."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://gitlab.com/torkel104/libstrangle"
+      ]
+    },
+    {
+      "id": "dxvk_async",
+      "match": {
+        "canonical_key": "DXVK_ASYNC",
+        "aliases": [
+          "dxvk.enableAsync",
+          "DXVK_ASYNC=1"
+        ],
+        "regex": "(?i)\\bDXVK_ASYNC\\b|dxvk\\.enableAsync"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "0",
+        "1"
+      ],
+      "description": "Switch for the old dxvk-async patch: it let DXVK render frames without waiting for the matching Vulkan pipeline to finish compiling, trading occasional visual glitches for far less shader-compilation stutter. It was a non-mainline patch (carried by GE/wine-tkg), not part of stock DXVK.",
+      "intent_type": "how",
+      "intent_note": "Reduced first-encounter shader stutter on builds that carried the patch.",
+      "category": "shader-cache-stutter",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "visual-fidelity",
+          "direction": "degrades"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Low risk and now low value: on a stock DXVK 2.x build the variable is simply ignored (no-op), so leaving it in does nothing rather than harm.",
+      "obsolescence": {
+        "status": "superseded",
+        "since": "DXVK 2.0",
+        "note": "DXVK 2.0 added VK_EXT_graphics_pipeline_library (GPL), which compiles shaders at load time and removes most compile stutter without the async glitches. GE-Proton dropped the async patch in 7-45 (Jan 2023). The community dxvk-gplasync fork continues async-on-top-of-GPL for old drivers, but vanilla DXVK_ASYNC is effectively dead. Downrank strongly."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2023/01/ge-proton-removes-the-dxvk-async-patch-in-version-7-45/",
+        "https://github.com/Frogging-Family/wine-tkg-git/issues/974",
+        "https://www.pcgamingwiki.com/wiki/DXVK"
+      ]
+    },
+    {
+      "id": "dxvk_frame_rate",
+      "match": {
+        "canonical_key": "DXVK_FRAME_RATE",
+        "aliases": [
+          "dxgi.maxFrameRate",
+          "d3d9.maxFrameRate"
+        ],
+        "regex": "(?i)\\bDXVK_FRAME_RATE\\b"
+      },
+      "kind": "env",
+      "value_type": "integer",
+      "values": [
+        "0",
+        "30",
+        "60",
+        "120",
+        "144"
+      ],
+      "description": "Caps the frame rate of D3D9/10/11 titles running through DXVK. 0 means uncapped. The per-config equivalents dxgi.maxFrameRate / d3d9.maxFrameRate do the same from dxvk.conf.",
+      "intent_type": "how",
+      "intent_note": "Frame cap for pacing, thermals, or fixing engines whose physics/animation break above a frame-rate ceiling.",
+      "category": "dxvk-rendering",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Pure limiter; only 'degrades' if set below what the user wants.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active in DXVK."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/doitsujin/dxvk",
+        "https://www.pcgamingwiki.com/wiki/DXVK"
+      ]
+    },
+    {
+      "id": "dxvk_hud",
+      "match": {
+        "canonical_key": "DXVK_HUD",
+        "aliases": [
+          "dxvk.hud"
+        ],
+        "regex": "(?i)\\bDXVK_HUD\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "devinfo",
+        "fps",
+        "frametimes",
+        "submissions",
+        "drawcalls",
+        "pipelines",
+        "descriptors",
+        "memory",
+        "allocations",
+        "gpuload",
+        "version",
+        "api",
+        "cs",
+        "compiler",
+        "samplers",
+        "ffshaders",
+        "swvp",
+        "scale=x",
+        "opacity=y",
+        "1",
+        "full"
+      ],
+      "description": "DXVK's built-in diagnostic overlay. A comma-separated list of elements: '1' shows device info + FPS, 'full' shows everything, and individual tokens (fps, frametimes, gpuload, pipelines, compiler, memory, version, api, ...) show just those. Independent of MangoHud and handy for confirming DXVK is actually active and which device it picked.",
+      "intent_type": "how",
+      "intent_note": "Observability overlay for DXVK; does not change rendering.",
+      "category": "monitoring-overlay",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Overlay only.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; element list grows across versions."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/doitsujin/dxvk/blob/master/README.md"
+      ]
+    },
+    {
+      "id": "dxvk_filter_device_name",
+      "match": {
+        "canonical_key": "DXVK_FILTER_DEVICE_NAME",
+        "aliases": [],
+        "regex": "(?i)\\bDXVK_FILTER_DEVICE_NAME\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "description": "Forces DXVK to use the Vulkan device whose reported name contains this substring. On a multi-GPU machine it pins rendering to the intended adapter (e.g. the RTX 4090 rather than the Intel iGPU). Replaces the older dxvk.hideIntegratedGraphics approach.",
+      "intent_type": "why",
+      "intent_note": "External constraint: on hybrid/multi-GPU systems DXVK may enumerate and pick the wrong device; this names the right one. Relevant on this Intel+NVIDIA laptop.",
+      "category": "gpu-offload-hybrid",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Device selection; harmless if the substring matches the intended GPU, only confusing if mistyped.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Current recommended way to filter the DXVK device."
+      },
+      "hardware_scope": "hybrid-laptop",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/doitsujin/dxvk/blob/master/README.md",
+        "https://github.com/doitsujin/dxvk/blob/master/dxvk.conf"
+      ]
+    },
+    {
+      "id": "dxvk_state_cache",
+      "match": {
+        "canonical_key": "DXVK_STATE_CACHE",
+        "aliases": [
+          "DXVK_STATE_CACHE_PATH"
+        ],
+        "regex": "(?i)\\bDXVK_STATE_CACHE(_PATH)?\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "0",
+        "1",
+        "reset"
+      ],
+      "description": "Controlled DXVK's on-disk pipeline state cache, which persisted compiled pipeline metadata between runs so shader stutter shrank on the second and later launches. DXVK_STATE_CACHE_PATH chose where to store it.",
+      "intent_type": "how",
+      "intent_note": "Reduced repeat-session shader stutter by remembering pipeline state.",
+      "category": "shader-cache-stutter",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Cache control; low risk. Now largely irrelevant because GPL changed how pipelines are built.",
+      "obsolescence": {
+        "status": "superseded",
+        "since": "DXVK 2.x (legacy state cache removed)",
+        "note": "The graphics-pipeline-library path replaced the legacy state cache; modern DXVK builds dropped it. Treat advice to toggle it as stale on current DXVK."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/doitsujin/dxvk",
+        "https://www.pcgamingwiki.com/wiki/DXVK"
+      ]
+    },
+    {
+      "id": "dxvk_config_overrides",
+      "match": {
+        "canonical_key": "DXVK_CONFIG",
+        "aliases": [
+          "DXVK_CONFIG_FILE",
+          "dxgi.nvapiHack",
+          "dxgi.hideAmdGpu",
+          "dxgi.syncInterval"
+        ],
+        "regex": "(?i)\\bDXVK_CONFIG(_FILE)?\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "description": "Inline or file-based DXVK tuning. DXVK_CONFIG takes semicolon-separated key=value pairs (e.g. 'dxgi.nvapiHack = False; dxgi.syncInterval = 0'); DXVK_CONFIG_FILE points at a dxvk.conf. Notable keys: dxgi.nvapiHack=False (let games see a real NVIDIA GPU so DLSS/NVAPI works), dxgi.syncInterval (vsync), dxgi.hideAmdGpu / dxgi.hideNvidiaGpu (device reporting).",
+      "intent_type": "both",
+      "intent_note": "why: specific keys are workarounds — dxgi.nvapiHack=False is required alongside PROTON_ENABLE_NVAPI for DLSS to be offered; others paper over device-detection quirks.",
+      "category": "dxvk-rendering",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "mixed"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Broad surface — most keys are safe, but a wrong sync/device key can cause stutter or hide the right GPU.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; individual keys come and go across DXVK releases."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/doitsujin/dxvk/blob/master/README.md",
+        "https://github.com/ValveSoftware/Proton/wiki/Changelog"
+      ]
+    },
+    {
+      "id": "vkd3d_config",
+      "match": {
+        "canonical_key": "VKD3D_CONFIG",
+        "aliases": [
+          "vkd3dbindlesstb",
+          "force_bindless_texel_buffer"
+        ],
+        "regex": "(?i)\\bVKD3D_CONFIG\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "dxr",
+        "dxr12",
+        "nodxr",
+        "no_upload_hvv",
+        "force_static_cbv",
+        "single_queue",
+        "force_host_cached",
+        "no_invariant_position",
+        "force_bindless_texel_buffer",
+        "skip_application_workarounds",
+        "pipeline_library_app_cache",
+        "breadcrumbs",
+        "vk_debug",
+        "descriptor_qa_checks"
+      ],
+      "description": "The master tuning variable for VKD3D-Proton (the Direct3D 12 -> Vulkan layer). A comma/semicolon list of tokens. Key ones: 'dxr' force-enables DirectX Raytracing (including DXR 1.1) even where VKD3D considers it unsafe; 'dxr12' enables experimental DXR 1.2; 'nodxr' disables ray tracing; 'no_upload_hvv' stops using host-visible VRAM for the upload heap (fixes VRAM-pressure stutter/regressions on some configs); 'force_static_cbv' is an NVIDIA-only speed hack; 'single_queue' disables async compute/transfer queues to work around driver bugs.",
+      "intent_type": "both",
+      "intent_note": "why: most tokens are workarounds for a specific driver/game bug (no_upload_hvv, single_queue, skip_application_workarounds) — the user wouldn't set them without a known issue. 'dxr'/'dxr12' are the 'how' (unlock ray-traced visuals). Per-token semantics differ; the recommender should map the exact token.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "mixed"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Token-dependent: 'dxr' on weak hardware tanks FPS; 'force_static_cbv' can render incorrectly on some titles; 'no_upload_hvv' is usually a safe fix. Evaluate per token.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active and the canonical VKD3D-Proton control; token list evolves per release. Note historical 'dxr11' is folded into 'dxr' in current builds."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md"
+      ]
+    },
+    {
+      "id": "vkd3d_disable_extensions",
+      "match": {
+        "canonical_key": "VKD3D_DISABLE_EXTENSIONS",
+        "aliases": [
+          "VK_NV_low_latency2"
+        ],
+        "regex": "(?i)\\bVKD3D_DISABLE_EXTENSIONS\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "VK_NV_low_latency2",
+        "VK_EXT_descriptor_buffer",
+        "VK_EXT_mutable_descriptor_type"
+      ],
+      "description": "Tells VKD3D-Proton not to use specific Vulkan extensions, comma-separated. The headline use is VKD3D_DISABLE_EXTENSIONS=VK_NV_low_latency2, which turns off the NVIDIA low-latency/Reflex extension path.",
+      "intent_type": "why",
+      "intent_note": "Canonical 'why' workaround: on NVIDIA, the VK_NV_low_latency2 path (used by Reflex and DLSS Frame Generation) has triggered crashes, non-monotonic-frame-ID stutter, and hitching in some D3D12 titles (e.g. the ARC Raiders frame-gen stutter report, vkd3d-proton issue #2794). Disabling the extension stops VKD3D from exercising the buggy path. It exists to dodge a known driver/extension regression, not to gain performance.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Removes Reflex/low-latency and can disable frame-gen as a side effect; correct only when that path is actually crashing/stuttering. On a fixed driver it is unnecessary and slightly worse for latency.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "varies by driver",
+        "note": "VK_NV_low_latency2 stutter was reimplemented/fixed in later vkd3d-proton + dxvk-nvapi + newer NVIDIA drivers; verify the crash still occurs before recommending. Strong recency dependence."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton/issues/2794",
+        "https://github.com/HansKristian-Work/vkd3d-proton/issues/2294",
+        "https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md"
+      ]
+    },
+    {
+      "id": "vkd3d_frame_rate",
+      "match": {
+        "canonical_key": "VKD3D_FRAME_RATE",
+        "aliases": [],
+        "regex": "(?i)\\bVKD3D_FRAME_RATE\\b"
+      },
+      "kind": "env",
+      "value_type": "integer",
+      "values": [
+        "0",
+        "60",
+        "120",
+        "144"
+      ],
+      "description": "Frame-rate cap for D3D12 titles under VKD3D-Proton; 0 uncaps, a positive value sets the FPS limit. The D3D12 counterpart of DXVK_FRAME_RATE.",
+      "intent_type": "how",
+      "intent_note": "Frame cap for pacing/thermals or engines sensitive to high frame rates.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Pure limiter.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md"
+      ]
+    },
+    {
+      "id": "vkd3d_feature_level",
+      "match": {
+        "canonical_key": "VKD3D_FEATURE_LEVEL",
+        "aliases": [
+          "vkd3dfl12"
+        ],
+        "regex": "(?i)\\bVKD3D_FEATURE_LEVEL\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "12_0",
+        "12_1",
+        "12_2"
+      ],
+      "description": "Requests a specific Direct3D 12 feature level from VKD3D rather than letting it auto-detect from driver capabilities. Rarely needed: a few games refuse to start unless a particular feature level is reported. Proton also exposes the 'vkd3dfl12' compat-config to force feature level 12 regardless of driver support.",
+      "intent_type": "why",
+      "intent_note": "Workaround for games that gate startup on a reported feature level.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Forcing a level the hardware/driver doesn't truly support can cause failures; auto-detection is correct for almost all titles.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "auto-detection improved",
+        "note": "DOCUMENTATION THIN for the env var in current vkd3d-proton (auto-detected); the Proton 'vkd3dfl12' compat-config is the documented path. Treat the bare env var as low-confidence/legacy."
+      },
+      "hardware_scope": "universal",
+      "confidence": "low",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md",
+        "https://github.com/HansKristian-Work/vkd3d-proton"
+      ]
+    },
+    {
+      "id": "vkd3d_shader_model",
+      "match": {
+        "canonical_key": "VKD3D_SHADER_MODEL",
+        "aliases": [],
+        "regex": "(?i)\\bVKD3D_SHADER_MODEL\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "6_0",
+        "6_5",
+        "6_6",
+        "6_7"
+      ],
+      "description": "Caps or sets the HLSL shader model VKD3D advertises. Was occasionally used to gate a too-new shader model that a driver couldn't handle, or to expose a newer one.",
+      "intent_type": "why",
+      "intent_note": "Workaround for shader-model mismatch between game and driver.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Mis-set shader model can break rendering; modern VKD3D negotiates this automatically on capable drivers.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "baseline raised",
+        "note": "DOCUMENTATION THIN in current vkd3d-proton; SM 6.x became baseline so the override is largely vestigial. Low confidence — downrank unless a report specifically cites it."
+      },
+      "hardware_scope": "universal",
+      "confidence": "low",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton"
+      ]
+    },
+    {
+      "id": "proton_enable_nvapi",
+      "match": {
+        "canonical_key": "PROTON_ENABLE_NVAPI",
+        "aliases": [
+          "enablenvapi",
+          "PROTON_ENABLE_NVAPI=1",
+          "DXVK_ENABLE_NVAPI"
+        ],
+        "regex": "(?i)\\bPROTON_ENABLE_NVAPI\\b|\\bDXVK_ENABLE_NVAPI\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Turns on Proton's NVAPI bridge (dxvk-nvapi), exposing NVIDIA's proprietary GPU API to Windows games. This is what lets DLSS, NVIDIA Reflex, and (on supported titles) DLSS Frame Generation be offered inside the game. Typically paired with DXVK's dxgi.nvapiHack=False so the game sees a genuine NVIDIA adapter. NOTE on DXVK_ENABLE_NVAPI: that is a REAL but separate variable used by dxvk-nvapi when running DXVK OUTSIDE Proton (it forces NVAPI init regardless of reported PCI vendor ID); under Proton the controlling variable is PROTON_ENABLE_NVAPI, so DXVK_ENABLE_NVAPI is folded here as an alias and should not be the primary recommendation for Steam/Proton launchOptions.",
+      "intent_type": "both",
+      "intent_note": "how: unlocks DLSS upscaling and Reflex, which visibly improve image quality and latency. why-ish: some games only expose those options when NVAPI is present, so it can also be a 'make the menu option appear' gate.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Brings the Linux experience closer to native (DLSS/Reflex parity). Rarely a small handful of titles misbehave with NVAPI present — hence the existence of the disable switch.",
+      "obsolescence": {
+        "status": "current",
+        "since": "Proton 6.x",
+        "note": "Active; default-off historically, increasingly on-by-default in recent Proton for NVIDIA. Relevant on this RTX 4090."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/wiki/Changelog",
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_disable_nvapi",
+      "match": {
+        "canonical_key": "PROTON_DISABLE_NVAPI",
+        "aliases": [
+          "PROTON_NO_NVAPI",
+          "disablenvapi"
+        ],
+        "regex": "(?i)\\bPROTON_(DISABLE|NO)_NVAPI\\b|\\bdisablenvapi\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Turns OFF Proton's NVAPI support library. The canonical name is PROTON_DISABLE_NVAPI (compat-config 'disablenvapi'); PROTON_NO_NVAPI is a commonly-seen variant spelling.",
+      "intent_type": "why",
+      "intent_note": "Workaround: a small set of games crash or render wrong when NVAPI is exposed; disabling it restores stability at the cost of DLSS/Reflex.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "degrades"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Sacrifices DLSS/Reflex; correct only for the specific titles that break with NVAPI on.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active. Canonical spelling is PROTON_DISABLE_NVAPI per Proton README; treat PROTON_NO_NVAPI as alias (medium confidence on that exact spelling)."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_hide_nvidia_gpu",
+      "match": {
+        "canonical_key": "PROTON_HIDE_NVIDIA_GPU",
+        "aliases": [
+          "hidenvgpu"
+        ],
+        "regex": "(?i)\\bPROTON_HIDE_NVIDIA_GPU\\b|\\bhidenvgpu\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Makes Proton report NVIDIA GPUs as AMD. Some games branch on Windows-only NVIDIA driver behavior that doesn't exist under Proton and break when they detect an NVIDIA card; spoofing AMD sidesteps that code path. Distinct from DXVK's dxgi.nvapiHack, which only changes what Direct3D reports.",
+      "intent_type": "why",
+      "intent_note": "Workaround for games that depend on Windows-only NVIDIA functionality and misbehave on the Linux NVIDIA driver.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Spoofing the vendor can disable NVIDIA-only features (DLSS) and confuse other code; use only for the specific titles that need it.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active niche workaround."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_nvidia_libs_no_32bit",
+      "match": {
+        "canonical_key": "PROTON_NVIDIA_LIBS_NO_32BIT",
+        "aliases": [
+          "PROTON_NVIDIA_LIBS"
+        ],
+        "regex": "(?i)\\bPROTON_NVIDIA_LIBS_NO_32BIT\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "A proton-cachyos option that restricts the bundled NVIDIA userspace libraries (nvcuda, nvenc, nvml, nvoptix) to their 64-bit builds only, skipping the 32-bit versions. Used together with PROTON_NVIDIA_LIBS=1. It exists because, on RTX 4000/5000-series GPUs, having the 32-bit NVIDIA libraries active for 32-bit games has caused crashes and degraded performance; dropping them to 64-bit-only resolves that.",
+      "intent_type": "why",
+      "intent_note": "Workaround for a specific regression: the 32-bit NVIDIA library path misbehaves with 32-bit titles on newer RTX (Ada/Blackwell) cards. It is NOT a generic speed knob — set it to dodge that crash/perf bug. NOTE OF ORIGIN: this is a proton-cachyos (and similar custom-build) variable, NOT documented in stock Valve Proton; scope advice to CachyOS/custom Proton. Directly relevant on this RTX 4090 + CachyOS box.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Removes a buggy 32-bit library path on affected RTX cards; safe for 64-bit games, and 32-bit games that needed the 32-bit NVIDIA libs are rare. Only meaningful on RTX 4000+.",
+      "obsolescence": {
+        "status": "current",
+        "since": "2025 (proton-cachyos)",
+        "note": "EVIDENCE MEDIUM: documented in proton-cachyos changelog/CachyOS forum, not in upstream Valve Proton. May be unnecessary once the underlying driver issue is fixed; verify per driver version."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/CachyOS/proton-cachyos/blob/cachyos_main/CHANGELOG.md",
+        "https://discuss.cachyos.org/t/proton-cachyos-environment-variables/13297"
+      ]
+    },
+    {
+      "id": "proton_enable_nvidia_reflex",
+      "match": {
+        "canonical_key": "PROTON_ENABLE_NVIDIA_REFLEX",
+        "aliases": [
+          "NVIDIA Reflex",
+          "low_latency"
+        ],
+        "regex": "(?i)\\bPROTON_ENABLE_NVIDIA_REFLEX\\b|\\breflex\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Refers to enabling NVIDIA Reflex (low-latency mode) under Proton. In practice Reflex is delivered automatically through dxvk-nvapi + the VK_NV_low_latency2 Vulkan extension once NVAPI is enabled and the driver/VKD3D support it — it is not toggled by a single well-documented standalone Proton variable.",
+      "intent_type": "how",
+      "intent_note": "Reduces input-to-photon latency. The mechanism is the low-latency2 extension exercised via NVAPI, not a discrete env switch.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Latency reducer; the same VK_NV_low_latency2 path can be the source of frame-gen stutter (see vkd3d_disable_extensions), so it interacts with that workaround.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "VKD3D-Proton 2.12 added Reflex",
+        "note": "DOCUMENTATION THIN: no clearly-documented standalone PROTON_ENABLE_NVIDIA_REFLEX variable was found; Reflex rides on NVAPI + VK_NV_low_latency2. Treat a literal env var of this name as low-confidence; map Reflex intent to proton_enable_nvapi."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "low",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2024/03/vkd3d-proton-version-212-adds-nvidia-reflex-support/",
+        "https://registry.khronos.org/vulkan/specs/latest/man/html/VK_NV_low_latency2.html"
+      ]
+    },
+    {
+      "id": "proton_dlss_indicator",
+      "match": {
+        "canonical_key": "PROTON_DLSS_INDICATOR",
+        "aliases": [],
+        "regex": "(?i)\\bPROTON_DLSS_INDICATOR\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Shows NVIDIA's DLSS debug overlay (bottom-left corner) so you can confirm DLSS is actually active and which mode/quality it's running. Diagnostic only.",
+      "intent_type": "why",
+      "intent_note": "Verification aid — proves DLSS is engaged; changes nothing about rendering.",
+      "category": "monitoring-overlay",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Debug watermark only.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://en.linuxadictos.com/GE-Proton-10.26-improves-compatibility-and-performance-on-Linux-and-Steam-Deck.html"
+      ]
+    },
+    {
+      "id": "proton_dlss_upgrade",
+      "match": {
+        "canonical_key": "PROTON_DLSS_UPGRADE",
+        "aliases": [],
+        "regex": "(?i)\\bPROTON_DLSS_UPGRADE\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "1",
+        "310.2"
+      ],
+      "description": "Auto-downloads and swaps in newer NVIDIA DLSS runtime DLLs (nvngx_dlss.dll for super-resolution, nvngx_dlssg.dll for frame generation, nvngx_dlssd.dll for ray reconstruction) in place of the ones a game shipped. =1 pulls the latest; a version string like \"310.2\" pins a specific DLSS branch. Newer DLSS runtimes typically give sharper, less-ghosty upscaling than the version baked into the game.",
+      "intent_type": "how",
+      "intent_note": "Better upscaling image quality by injecting a newer DLSS runtime than the game bundled.",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Newer DLSS rarely regresses; occasional per-game incompatibility with a specific DLL version (pin a known-good version if so).",
+      "obsolescence": {
+        "status": "current",
+        "since": "GE-Proton 10-x / proton-cachyos",
+        "note": "Confirmed in GE-Proton (e.g. 10-26) and proton-cachyos; NOT confirmed in stock Valve Proton — scope to those custom builds. Directly relevant on this RTX 4090 + CachyOS box."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2025/12/ge-proton-10-26-released-with-fex-included-improvements-for-dlss-and-game-fixes/",
+        "https://wiki.cachyos.org/configuration/gaming/",
+        "https://github.com/theinvisible/proton-forge"
+      ]
+    },
+    {
+      "id": "gl_shader_disk_cache",
+      "match": {
+        "canonical_key": "__GL_SHADER_DISK_CACHE",
+        "aliases": [
+          "__GL_SHADER_DISK_CACHE_SIZE",
+          "__GL_SHADER_DISK_CACHE_PATH",
+          "__GL_SHADER_DISK_CACHE_SKIP_CLEANUP"
+        ],
+        "regex": "(?i)__GL_SHADER_DISK_CACHE"
+      },
+      "kind": "env",
+      "value_type": "mixed",
+      "values": [
+        "1",
+        "0",
+        "<bytes>"
+      ],
+      "description": "NVIDIA driver shader-cache controls. __GL_SHADER_DISK_CACHE=1 enables the on-disk cache; __GL_SHADER_DISK_CACHE_SIZE sets its size in bytes (e.g. 10737418240 for 10 GB); __GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1 stops the driver pruning it. Raising/uncapping the size keeps compiled shaders around so later sessions don't re-stutter — important for shader-heavy modern titles whose cache the driver would otherwise evict.",
+      "intent_type": "why",
+      "intent_note": "Workaround for the NVIDIA driver pruning the shader cache too aggressively, which reintroduces compile stutter ('cold cache') in big games. Enlarging/skip-cleanup stops the eviction.",
+      "category": "shader-cache-stutter",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Only costs disk space; no rendering risk.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active NVIDIA-specific tuning; relevant on this RTX 4090."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://download.nvidia.com/XFree86/Linux-x86_64/470.239.06/README/openglenvvariables.html",
+        "https://github.com/ValveSoftware/steam-for-linux/issues/11392"
+      ]
+    },
+    {
+      "id": "gl_threaded_optimizations",
+      "match": {
+        "canonical_key": "__GL_THREADED_OPTIMIZATIONS",
+        "aliases": [],
+        "regex": "(?i)__GL_THREADED_OPTIMIZATIONS"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "0",
+        "1"
+      ],
+      "description": "NVIDIA's OpenGL threaded-optimization toggle. =1 forces the driver to offload OpenGL call processing onto a separate CPU thread, which can help CPU-bound OpenGL workloads. The driver enables this automatically under some conditions and self-disables when it isn't helping; the variable forces it on (or off with 0).",
+      "intent_type": "how",
+      "intent_note": "CPU offload for the NVIDIA OpenGL driver — helps CPU-bound GL titles. The NVIDIA analogue of Mesa's mesa_glthread.",
+      "category": "nvidia-feature",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Can help or slightly hurt depending on the app's GL call pattern (it has historically caused crashes in a few apps), which is why the driver auto-manages it. Forcing it is low-risk but not always a win.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "OpenGL era",
+        "note": "OPENGL-ONLY: it does NOTHING for Vulkan or for D3D-over-Vulkan (DXVK/VKD3D), i.e. it is irrelevant to the vast majority of modern Proton games, which run on the Vulkan path. Only meaningful for native OpenGL games / emulators / old GL titles. Downrank for Vulkan/DXVK/VKD3D workloads."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://download.nvidia.com/XFree86/Linux-x86_64/435.17/README/openglenvvariables.html",
+        "https://www.phoronix.com/review/nvidia_opengl_threaded"
+      ]
+    },
+    {
+      "id": "dxvk_nvapi_gpu_arch",
+      "match": {
+        "canonical_key": "DXVK_NVAPI_GPU_ARCH",
+        "aliases": [],
+        "regex": "(?i)\\bDXVK_NVAPI_GPU_ARCH\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "GA100",
+        "AD102"
+      ],
+      "description": "Overrides the NVIDIA GPU architecture string that dxvk-nvapi reports to games. Setting it to something like GA100 has been used to dodge specific frame-generation stutter, but as a side effect it disables DLSS Frame Generation (the spoofed arch isn't recognized as FG-capable).",
+      "intent_type": "why",
+      "intent_note": "Workaround that trades off a feature: spoofing the arch stops the buggy frame-gen path at the cost of frame generation itself.",
+      "category": "frame-generation",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        },
+        {
+          "axis": "visual-fidelity",
+          "direction": "degrades"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Disables frame generation and may misreport capabilities; only for the specific stutter it cures.",
+      "obsolescence": {
+        "status": "partial",
+        "since": "driver-dependent",
+        "note": "Tied to transient frame-gen bugs; verify still needed. Niche."
+      },
+      "hardware_scope": "nvidia-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton/issues/2794"
+      ]
+    },
+    {
+      "id": "proton_fsr4_upgrade",
+      "match": {
+        "canonical_key": "PROTON_FSR4_UPGRADE",
+        "aliases": [
+          "PROTON_FSR4_INDICATOR"
+        ],
+        "regex": "(?i)\\bPROTON_FSR4_(UPGRADE|INDICATOR)\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "1",
+        "4.0.1",
+        "4.0.2"
+      ],
+      "description": "Upgrades games using AMD FSR 3.1 to FSR 4 by downloading and injecting amdxcffx64.dll (defaults to 4.0.2; a version string pins it). FSR4 is a higher-quality, ML-based upscaler. PROTON_FSR4_INDICATOR adds a watermark to confirm it's active. A GE-Proton / proton-cachyos feature.",
+      "intent_type": "how",
+      "intent_note": "Sharper upscaling by swapping FSR 3.1 for FSR 4.",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "FSR4 is primarily an AMD RDNA4 feature; on non-AMD hardware the upgrade path may not apply or may fall back. Image quality gain when it works.",
+      "obsolescence": {
+        "status": "current",
+        "since": "2025 (GE/CachyOS)",
+        "note": "New; mostly AMD-targeted. On this NVIDIA box, prefer DLSS-side upgrades (proton_dlss_upgrade). Scope to custom Proton builds."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://en.linuxadictos.com/GE-Proton-10.26-improves-compatibility-and-performance-on-Linux-and-Steam-Deck.html"
+      ]
+    },
+    {
+      "id": "proton_xess_upgrade",
+      "match": {
+        "canonical_key": "PROTON_XESS_UPGRADE",
+        "aliases": [],
+        "regex": "(?i)\\bPROTON_XESS_UPGRADE\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "1"
+      ],
+      "description": "Downloads and injects newer Intel XeSS / XeSS 2 upscaler runtime DLLs (libxess.dll) in place of the version a game shipped, keeping the upscaler current. The sibling of PROTON_DLSS_UPGRADE (DLSS) and PROTON_FSR4_UPGRADE (FSR). A GE-Proton / proton-cachyos feature.",
+      "intent_type": "how",
+      "intent_note": "Better upscaling image quality by swapping in a newer XeSS runtime than the game bundled.",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Newer XeSS rarely regresses; occasional per-game DLL incompatibility. XeSS runs cross-vendor (best on Intel Arc with XMX, a DP4a fallback path elsewhere), so it is usable on this NVIDIA box but DLSS is the stronger native option here.",
+      "obsolescence": {
+        "status": "current",
+        "since": "GE-Proton / proton-cachyos (2025)",
+        "note": "Custom-build feature; not confirmed in stock Valve Proton. Scope accordingly."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://en.linuxadictos.com/GE-Proton-10.26-improves-compatibility-and-performance-on-Linux-and-Steam-Deck.html",
+        "https://www.gamingonlinux.com/2025/12/ge-proton-10-26-released-with-fex-included-improvements-for-dlss-and-game-fixes/"
+      ]
+    },
+    {
+      "id": "proton_fsr4_rdna3_upgrade",
+      "match": {
+        "canonical_key": "PROTON_FSR4_RDNA3_UPGRADE",
+        "aliases": [],
+        "regex": "(?i)\\bPROTON_FSR4_RDNA3_UPGRADE\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "1",
+        "4.0.0",
+        "4.0.2"
+      ],
+      "description": "The RDNA3-specific variant of the FSR4 upgrade path: it backports FSR 4 to Radeon RX 7000 (RDNA3) GPUs, enabling the required compatibility options and downloading the FSR4 DLL (version 4.0.0 by default). FSR4 is officially an RDNA4 feature; this makes it work on the older RDNA3 generation.",
+      "intent_type": "how",
+      "intent_note": "Unlocks the higher-quality FSR4 upscaler on RDNA3 hardware that wouldn't otherwise get it. why-ish: the RDNA3 path is sensitive — different DLL versions change game stability — so it bundles compat options.",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "A backport onto hardware FSR4 wasn't designed for; the RX 7000 path is more sensitive than RDNA4 and can be unstable per DLL version. AMD RDNA3 only.",
+      "obsolescence": {
+        "status": "current",
+        "since": "2025 (proton-cachyos)",
+        "note": "proton-cachyos / GE feature for RDNA3. NOT applicable on this NVIDIA box (no AMD RDNA3 GPU) — suppress here."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://discuss.cachyos.org/t/fsr4-on-rdna3-with-proton-cachyos-env-vars-4-0-0-vs-4-0-2-and-where-the-dlls-are-cached/19391",
+        "https://www.techpowerup.com/340309/new-cachyos-release-adds-quality-of-life-features-and-enables-fsr-4-for-rdna-3-gpus"
+      ]
+    },
+    {
+      "id": "wine_fullscreen_fsr",
+      "match": {
+        "canonical_key": "WINE_FULLSCREEN_FSR",
+        "aliases": [
+          "WINE_FULLSCREEN_FSR_STRENGTH",
+          "WINE_FULLSCREEN_FSR_MODE",
+          "fshack"
+        ],
+        "regex": "(?i)\\bWINE_FULLSCREEN_FSR(_STRENGTH|_MODE)?\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Proton's own built-in AMD FSR 1.0 spatial upscaler (the 'FShack'): when a game renders at a lower-than-native resolution, Proton upscales the final image to the output resolution and applies sharpening. WINE_FULLSCREEN_FSR_STRENGTH sets the sharpening amount (0-5, 0 = sharpest, default 2). This is a vendor-agnostic spatial upscale applied at the Wine/Proton layer — distinct from gamescope's FSR and from in-engine FSR2/3/4.",
+      "intent_type": "how",
+      "intent_note": "Frees performance by rendering low and upscaling, for games that have no built-in upscaler.",
+      "category": "upscaling",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "visual-fidelity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "FSR1 is spatial-only (no temporal data), so it can look soft/blurry vs native or vs DLSS/FSR2+. Useful where nothing better exists; downrank if the game already offers FSR2/3/4 or DLSS (better quality on this RTX 4090).",
+      "obsolescence": {
+        "status": "partial",
+        "since": "GE-Proton 7-24+",
+        "note": "Still works but FSR1-class; largely superseded by in-engine temporal upscalers and DLSS where available."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/frostworx/steamtinkerlaunch/wiki/Wine-FSR",
+        "https://wccftech.com/amd-fsr-can-be-applied-to-all-vulkan-games-via-protons-fshack/"
+      ]
+    },
+    {
+      "id": "radv_perftest",
+      "match": {
+        "canonical_key": "RADV_PERFTEST",
+        "aliases": [
+          "RADV_PERFTEST=gpl"
+        ],
+        "regex": "(?i)\\bRADV_PERFTEST\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "gpl",
+        "rt",
+        "nggc",
+        "sam",
+        "video_decode"
+      ],
+      "description": "Enables experimental, not-yet-default features in Mesa's RADV (AMD Vulkan) driver. Historically RADV_PERFTEST=gpl turned on graphics-pipeline-library to cut shader-compile stutter before it was the default.",
+      "intent_type": "how",
+      "intent_note": "Opt-in to perf features ahead of their default activation.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Experimental flags are usually safe but can expose bugs; the headline 'gpl' value is now default.",
+      "obsolescence": {
+        "status": "default-now",
+        "since": "RADV GPL became default",
+        "note": "RADV_PERFTEST=gpl is redundant on current Mesa (GPL is on by default). Downrank the gpl token. NOT applicable on this NVIDIA box (no AMD GPU)."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://docs.mesa3d.org/drivers/radv.html",
+        "https://docs.mesa3d.org/envvars.html"
+      ]
+    },
+    {
+      "id": "radv_debug",
+      "match": {
+        "canonical_key": "RADV_DEBUG",
+        "aliases": [
+          "RADV_DEBUG=nohiz",
+          "RADV_DEBUG=nocompute"
+        ],
+        "regex": "(?i)\\bRADV_DEBUG\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "nohiz",
+        "nocompute",
+        "hang",
+        "zerovram",
+        "llvm"
+      ],
+      "description": "RADV debug flags. Some double as workarounds: nohiz disables hierarchical-Z (fixes certain visual glitches), nocompute disables the compute queue, zerovram zero-initializes VRAM (fixes a few games), hang generates a GPU-hang report.",
+      "intent_type": "why",
+      "intent_note": "Workaround/diagnostic flags for specific AMD rendering bugs.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        },
+        {
+          "axis": "performance",
+          "direction": "degrades"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Disabling driver features to fix glitches usually costs performance; only for the specific bug.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active but niche. NOT applicable on this NVIDIA box."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://docs.mesa3d.org/drivers/radv.html"
+      ]
+    },
+    {
+      "id": "aco_debug",
+      "match": {
+        "canonical_key": "ACO_DEBUG",
+        "aliases": [],
+        "regex": "(?i)\\bACO_DEBUG\\b"
+      },
+      "kind": "env",
+      "value_type": "list",
+      "values": [
+        "validateir",
+        "validatera",
+        "force-waitcnt"
+      ],
+      "description": "Debug flags for ACO, RADV's shader compiler. These are developer/diagnostic switches (IR validation, scheduling tweaks), not a normal performance lever.",
+      "intent_type": "why",
+      "intent_note": "Debug/diagnostic; appears in launchOptions almost only when chasing a compiler bug.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Debug only; some flags slow compilation. Not a perf recommendation.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Debug var. NOT applicable on this NVIDIA box; low value as advice."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "low",
+      "doc_sources": [
+        "https://docs.mesa3d.org/envvars.html"
+      ]
+    },
+    {
+      "id": "amd_vulkan_icd",
+      "match": {
+        "canonical_key": "AMD_VULKAN_ICD",
+        "aliases": [
+          "AMD_VULKAN_ICD=RADV",
+          "AMD_VULKAN_ICD=AMDVLK"
+        ],
+        "regex": "(?i)\\bAMD_VULKAN_ICD\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "RADV",
+        "AMDVLK"
+      ],
+      "description": "Chooses which AMD Vulkan driver to use when both are installed: RADV (Mesa, generally faster for gaming) or AMDVLK (AMD's open driver). =RADV forces the Mesa driver.",
+      "intent_type": "why",
+      "intent_note": "Driver selection workaround for systems with both ICDs installed; usually automatic.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Picks a driver; the choice matters only when both are present.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active. NOT applicable on this NVIDIA box."
+      },
+      "hardware_scope": "amd-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://wiki.archlinux.org/title/Vulkan",
+        "https://github.com/GPUOpen-Drivers/AMDVLK/issues/222"
+      ]
+    },
+    {
+      "id": "mesa_glthread",
+      "match": {
+        "canonical_key": "mesa_glthread",
+        "aliases": [
+          "mesa_glthread=true"
+        ],
+        "regex": "(?i)\\bmesa_glthread\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "true",
+        "false"
+      ],
+      "description": "Enables Mesa's OpenGL threading: GL calls are dispatched on a separate CPU thread, which can sizably raise FPS in CPU-bound OpenGL games (older/native Linux titles, emulators). Only affects the OpenGL path, not Vulkan/DXVK/VKD3D.",
+      "intent_type": "how",
+      "intent_note": "CPU offloading for the GL driver — helps CPU-bound OpenGL workloads.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Default-enabled for many apps already; a rare GL app misbehaves with threading, hence the manual toggle.",
+      "obsolescence": {
+        "status": "default-now",
+        "since": "Mesa 22.3 (RadeonSI default)",
+        "note": "Auto-enabled per-app for most titles; manual setting mainly for apps not on the allowlist. OpenGL-only — irrelevant to Vulkan/D3D-over-Vulkan games. On this box applies to the Intel iGPU Mesa path only."
+      },
+      "hardware_scope": "mesa-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.phoronix.com/news/Mesa-20.1-More-GLTHREAD",
+        "https://docs.mesa3d.org/envvars.html"
+      ]
+    },
+    {
+      "id": "enable_layer_mesa_anti_lag",
+      "match": {
+        "canonical_key": "ENABLE_LAYER_MESA_ANTI_LAG",
+        "aliases": [
+          "VkLayer_MESA_anti_lag",
+          "VK_AMD_anti_lag"
+        ],
+        "regex": "(?i)\\bENABLE_LAYER_MESA_ANTI_LAG\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Enables Mesa's implicit Vulkan layer (VkLayer_MESA_anti_lag) that implements the VK_AMD_anti_lag extension, added in Mesa 25.3. It paces the CPU so it doesn't run too far ahead of the GPU, reducing input-to-display latency — Mesa's answer to AMD Anti-Lag / NVIDIA Reflex.",
+      "intent_type": "how",
+      "intent_note": "Latency reduction via CPU pacing for Mesa Vulkan drivers.",
+      "category": "amd-mesa",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Latency layer; low downside. But real-world results are reported as mixed/unstable and sometimes a no-op, so don't oversell the benefit.",
+      "obsolescence": {
+        "status": "current",
+        "since": "Mesa 25.3 (2025)",
+        "note": "New and Mesa-only (RADV/ANV — AMD and Intel). Disabled by default, opt-in. NOT honored by the NVIDIA proprietary driver — on this box it would apply only to the Intel iGPU ANV path, not the RTX 4090."
+      },
+      "hardware_scope": "mesa-only",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://www.phoronix.com/news/Mesa-Vulkan-AMD-Anti-Lag",
+        "https://github.com/clearlinux/distribution/issues/3326"
+      ]
+    },
+    {
+      "id": "proton_use_wined3d",
+      "match": {
+        "canonical_key": "PROTON_USE_WINED3D",
+        "aliases": [
+          "wined3d",
+          "PROTON_USE_WINED3D11"
+        ],
+        "regex": "(?i)\\bPROTON_USE_WINED3D(11)?\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Forces Proton to translate Direct3D 9/10/11 through the old OpenGL-based WineD3D path instead of the Vulkan-based DXVK. Almost never desirable for performance — DXVK is faster and more compatible — it exists for the rare game DXVK can't render and for systems without a usable Vulkan driver.",
+      "intent_type": "why",
+      "intent_note": "Fallback for DXVK incompatibility or missing Vulkan support; not a tuning choice.",
+      "category": "wine-compat-workaround",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "degrades"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "high",
+      "parity_risk_rationale": "Switching off DXVK typically tanks performance and is the cause of, not cure for, most parity loss; only correct for the narrow set of titles DXVK can't handle. Strong downrank unless a report specifically needs it.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Still present as a fallback; rarely the right answer on a modern Vulkan-capable box like this one."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_no_esync",
+      "match": {
+        "canonical_key": "PROTON_NO_ESYNC",
+        "aliases": [
+          "noesync",
+          "WINEESYNC=0"
+        ],
+        "regex": "(?i)\\bPROTON_NO_ESYNC\\b|\\bnoesync\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Disables esync, the eventfd-based in-process synchronization that lowers Wine's threading overhead. Esync is on by default and generally helps CPU-bound games; this turns it off.",
+      "intent_type": "why",
+      "intent_note": "Workaround: a few games crash or misbehave with esync's many file descriptors / sync semantics; disabling it restores stability. Note WINEESYNC can override this.",
+      "category": "wine-sync",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "degrades"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Removes a perf optimization; only worth it when esync is the proven cause of a crash/hang.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; rarely needed on modern kernels."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md",
+        "https://github.com/ValveSoftware/Proton/issues/2922"
+      ]
+    },
+    {
+      "id": "proton_no_fsync",
+      "match": {
+        "canonical_key": "PROTON_NO_FSYNC",
+        "aliases": [
+          "nofsync",
+          "WINEFSYNC=0"
+        ],
+        "regex": "(?i)\\bPROTON_NO_FSYNC\\b|\\bnofsync\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Disables fsync, the futex-based synchronization that's even lower-overhead than esync on supported kernels. Enabled by default when the kernel supports it; this reverts to esync (or no accelerated sync).",
+      "intent_type": "why",
+      "intent_note": "Workaround/diagnostic: setting it isolates whether a crash or perf regression is fsync-related. A few titles need it off.",
+      "category": "wine-sync",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "degrades"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Gives up the best sync path; only correct when fsync demonstrably breaks the game. CachyOS kernels support fsync, so default-on is the norm here.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active. Auto-disabled where the kernel lacks FUTEX_WAIT_MULTIPLE."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md",
+        "https://github.com/ValveSoftware/Proton/issues/3761"
+      ]
+    },
+    {
+      "id": "proton_use_ntsync",
+      "match": {
+        "canonical_key": "PROTON_USE_NTSYNC",
+        "aliases": [
+          "PROTON_NO_NTSYNC",
+          "WINENTSYNC",
+          "PROTON_ENABLE_NTSYNC",
+          "ntsync"
+        ],
+        "regex": "(?i)\\bPROTON_(USE|NO|ENABLE)_NTSYNC\\b|\\bWINENTSYNC\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Tells Proton to use NTSYNC for Wine thread synchronization instead of esync/fsync. NTSYNC is an in-kernel driver (CONFIG_NTSYNC, exposed as /dev/ntsync) that implements Windows NT synchronization primitives directly in the Linux kernel — mainlined in kernel 6.14 (also available as a patch on 6.12/6.13). Because the NT sync semantics live in the kernel rather than being emulated with eventfds/futexes, it is more accurate and lower-overhead than esync/fsync, improving CPU-bound performance, frame pacing, and compatibility. PROTON_NO_NTSYNC=1 forces the fsync fallback for the rare game that misbehaves with it.",
+      "intent_type": "how",
+      "intent_note": "Primarily a smoothness/correctness win (more faithful NT sync, less overhead, fewer sync-related frame stutters). Mild 'why' angle: it also fixes specific sync-related hitching in some titles, which is exactly why it tops the yes-rate for sync-sensitive games.",
+      "category": "wine-sync",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "More accurate than esync/fsync and broadly beneficial; a small number of games pair poorly with it (hence PROTON_NO_NTSYNC). Requires kernel NTSYNC support AND a Proton build that uses it — both satisfied on this CachyOS 6.14+ box with proton-cachyos/GE/Experimental.",
+      "obsolescence": {
+        "status": "current",
+        "since": "kernel 6.14 / GE-Proton 10-9 (2025)",
+        "note": "Current and the preferred sync path going forward. NTSYNC is now enabled BY DEFAULT when the kernel supports it — in GE-Proton 10-10+, recent proton-cachyos, AND stock Valve Proton 11 — where the PROTON_USE_NTSYNC opt-in has effectively been removed (the var is a no-op / ntsync is on by default), and you instead DISABLE it with PROTON_NO_NTSYNC=1 for the rare game that misbehaves. So an explicit PROTON_USE_NTSYNC=1 is redundant on current builds but harmless. NOTE: 'PROTON_ENABLE_NTSYNC' is NOT a documented variable — it is folded here as user shorthand for PROTON_USE_NTSYNC. Verify build/kernel before treating the enable-var as required vs already-default."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2025/01/ntsync-for-proton-wine-now-in-linux-kernel-6-14-that-should-make-many-steamos-users-happy/",
+        "https://www.gamingonlinux.com/2025/07/ge-proton-10-9-released-with-ntsync-and-fsr4-upgrade-support/",
+        "https://discuss.cachyos.org/t/ntsync-in-latest-proton-cachyos-wine-cachyos/5254"
+      ]
+    },
+    {
+      "id": "proton_force_large_address_aware",
+      "match": {
+        "canonical_key": "PROTON_FORCE_LARGE_ADDRESS_AWARE",
+        "aliases": [
+          "forcelgadd"
+        ],
+        "regex": "(?i)\\bPROTON_FORCE_LARGE_ADDRESS_AWARE\\b|\\bforcelgadd\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Forces Wine to set the LARGE_ADDRESS_AWARE flag on all executables, letting 32-bit games address more than 2 GB of memory. Fixes out-of-memory crashes in big 32-bit titles.",
+      "intent_type": "why",
+      "intent_note": "Workaround for 32-bit games hitting the 2 GB address ceiling — but it is now ENABLED BY DEFAULT in Proton, so explicitly setting it is usually redundant.",
+      "category": "wine-compat-workaround",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Almost always beneficial or no-op; default-on now.",
+      "obsolescence": {
+        "status": "default-now",
+        "since": "enabled by default in Proton",
+        "note": "The Proton README lists forcelgadd as enabled by default; setting the variable explicitly is redundant on current Proton. Downrank as 'already default'."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "winedlloverrides",
+      "match": {
+        "canonical_key": "WINEDLLOVERRIDES",
+        "aliases": [
+          "dinput8=n,b",
+          "winmm=n,b",
+          "version=n,b",
+          "d3d11=n",
+          "dxgi=n"
+        ],
+        "regex": "(?i)\\bWINEDLLOVERRIDES\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "description": "Tells Wine/Proton how to load specific DLLs: 'n' native (the file shipped next to the game), 'b' built-in (Wine's own), 'n,b' native-then-builtin, or '' to disable. Most commonly used for modding — dinput8=n,b, winmm=n,b, version=n,b let ASI loaders / mod frameworks that hook those DLLs run under Proton — and occasionally to force or disable a renderer DLL (e.g. d3d11/dxgi).",
+      "intent_type": "why",
+      "intent_note": "Modding/loader constraint: many mod loaders work by shipping a proxy DLL (dinput8/winmm/version) that Windows loads automatically but Wine ignores unless told to prefer native. The override exists to make that loader load.",
+      "category": "wine-dll-modding",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Loading a native DLL can crash or destabilize if the DLL is wrong/incompatible; scoped per-DLL, generally safe when used for the intended mod.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; Proton has discussed whitelisting dinput8/winmm by default, which would make some overrides unnecessary."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/issues/7974",
+        "https://github.com/ValveSoftware/Proton/issues/8639"
+      ]
+    },
+    {
+      "id": "proton_no_steaminput",
+      "match": {
+        "canonical_key": "PROTON_NO_STEAMINPUT",
+        "aliases": [
+          "SteamDeck Steam Input"
+        ],
+        "regex": "(?i)\\bPROTON_NO_STEAMINPUT\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Disables Steam Input handling for the game. Steam Input remaps controllers through Steam's own layer; some games do their own controller handling and conflict with it, producing doubled/ghost inputs, an unrecognized pad, or broken glyphs. Turning it off lets the game talk to the controller directly.",
+      "intent_type": "why",
+      "intent_note": "Workaround for Steam-Input-vs-native-controller conflicts. Also note: PROTON_ENABLE_WAYLAND currently breaks Steam Input anyway, so the two interact on this Wayland box.",
+      "category": "launcher-or-ux",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Input-routing toggle; downside is losing Steam Input remaps/community configs for that game. Correct only when Steam Input is the proven cause of an input problem.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active Proton runtime option."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://wiki.cachyos.org/configuration/gaming/",
+        "https://www.protondb.com/help/improving-performance"
+      ]
+    },
+    {
+      "id": "proton_log",
+      "match": {
+        "canonical_key": "PROTON_LOG",
+        "aliases": [
+          "PROTON_LOG_DIR",
+          "WINEDEBUG"
+        ],
+        "regex": "(?i)\\bPROTON_LOG\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Dumps a Proton/Wine debug log to $PROTON_LOG_DIR/steam-$APPID.log (home directory by default). Set to a string to append WINEDEBUG channels. Purely for diagnosing why a game fails to launch or crashes.",
+      "intent_type": "why",
+      "intent_note": "Diagnostic only — produces logs; never improves the game.",
+      "category": "launcher-or-ux",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "neutral"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Logging; trivial overhead, no behavioral change.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "wine_cpu_topology",
+      "match": {
+        "canonical_key": "WINE_CPU_TOPOLOGY",
+        "aliases": [],
+        "regex": "(?i)\\bWINE_CPU_TOPOLOGY\\b"
+      },
+      "kind": "env",
+      "value_type": "string",
+      "values": [
+        "4:0,1,2,3",
+        "8:0,1,2,3,4,5,6,7"
+      ],
+      "description": "Overrides the CPU topology Wine reports to the game, in the form N:core_list (e.g. 8:0,1,2,3,4,5,6,7). Used to hide cores: some games crash, stutter, or refuse to launch on machines with very high core/thread counts, and limiting the visible set works around it. On X3D CPUs it can also pin the game to the V-cache CCD.",
+      "intent_type": "why",
+      "intent_note": "Workaround for games that break on high core counts or benefit from being confined to specific cores; not a generic speedup.",
+      "category": "cpu-scheduling",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Restricting cores can hurt perf for well-threaded games; correct only for titles with the high-core-count bug or for V-cache pinning.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active niche workaround."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/issues/5927",
+        "https://github.com/ValveSoftware/Proton/issues/7154"
+      ]
+    },
+    {
+      "id": "proton_enable_wayland",
+      "match": {
+        "canonical_key": "PROTON_ENABLE_WAYLAND",
+        "aliases": [
+          "PROTON_ENABLE_HDR"
+        ],
+        "regex": "(?i)\\bPROTON_ENABLE_WAYLAND\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Makes Proton render through a native Wayland surface instead of going through XWayland. Can lower latency, improve frame pacing, and enable HDR without gamescope — but it is experimental and currently breaks the Steam overlay and Steam Input on many titles.",
+      "intent_type": "both",
+      "intent_note": "how: better latency/pacing and HDR on a Wayland session. why: also needed by some setups to avoid XWayland quirks. Directly relevant on this Wayland/KDE box, with the overlay/input caveat.",
+      "category": "display-wayland",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "Experimental; loses Steam overlay/Input and a few games render wrong, but improves latency/HDR when it works.",
+      "obsolescence": {
+        "status": "current",
+        "since": "Proton 9/10 (experimental)",
+        "note": "Active and maturing; flagged experimental. Relevant here because the session is Wayland."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md",
+        "https://wiki.cachyos.org/configuration/gaming/"
+      ]
+    },
+    {
+      "id": "wine_disable_vulkan_opwr",
+      "match": {
+        "canonical_key": "WINE_DISABLE_VULKAN_OPWR",
+        "aliases": [
+          "noopwr"
+        ],
+        "regex": "(?i)\\bWINE_DISABLE_VULKAN_OPWR\\b|\\bnoopwr\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Disables Vulkan 'other-process window rendering' in Wine. On Wayland this blit can lag one frame behind and cause visual issues; disabling it fixes those.",
+      "intent_type": "why",
+      "intent_note": "Wayland-specific workaround for a one-frame-behind blit artifact. Relevant on this Wayland session.",
+      "category": "display-wayland",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Targeted fix for a Wayland rendering quirk; low downside.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active Wayland workaround."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/ValveSoftware/Proton/blob/proton_10.0/README.md"
+      ]
+    },
+    {
+      "id": "proton_enable_hdr",
+      "match": {
+        "canonical_key": "PROTON_ENABLE_HDR",
+        "aliases": [
+          "DXVK_HDR",
+          "ENABLE_HDR_WSI",
+          "dxgi.enableHDR"
+        ],
+        "regex": "(?i)\\bPROTON_ENABLE_HDR\\b|\\bDXVK_HDR\\b|\\bENABLE_HDR_WSI\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Enables High Dynamic Range output for a game under Proton. In practice this is a small cluster set together: PROTON_ENABLE_HDR=1 (Proton side), DXVK_HDR=1 (the DXVK/D3D layer emits an HDR swapchain), and on some setups ENABLE_HDR_WSI=1 (routes HDR through the vk-hdr-layer). Usually combined with PROTON_ENABLE_WAYLAND=1. The result is wider color/brightness on an HDR display.",
+      "intent_type": "both",
+      "intent_note": "how: visibly better image on HDR hardware. why: it also has hard external requirements — an HDR-capable display, a Wayland compositor with the color-management protocol (KDE Plasma 6 qualifies), and on NVIDIA historically the vk-hdr-layer + ENABLE_HDR_WSI for drivers BEFORE 595.58.03. This box runs driver 595.71.05 (newer than that cutoff) on KDE/Wayland, so the extra vk-hdr-layer/ENABLE_HDR_WSI step is likely unnecessary and PROTON_ENABLE_HDR + DXVK_HDR should suffice. Do NOT set ENABLE_HDR_WSI together with gamescope HDR (they conflict).",
+      "category": "display-wayland",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "When the display/compositor/driver prerequisites are met it just enables HDR; if they are not met it is a no-op or causes washed-out/incorrect color. Risk is misconfiguration, not instability.",
+      "obsolescence": {
+        "status": "current",
+        "since": "Proton 9/10 + Plasma 6 HDR",
+        "note": "Active and maturing on Wayland. The NVIDIA vk-hdr-layer requirement is fading as the driver gains native HDR WSI (this box's 595.71.05 is past the 595.58.03 cutoff)."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://wiki.archlinux.org/title/HDR_monitor_support",
+        "https://discuss.cachyos.org/t/hdr-without-gamescope-guide/8640",
+        "https://github.com/DXC-0/Linux-HDR-Guide"
+      ]
+    },
+    {
+      "id": "mesa_vk_wsi_present_mode",
+      "match": {
+        "canonical_key": "MESA_VK_WSI_PRESENT_MODE",
+        "aliases": [],
+        "regex": "(?i)\\bMESA_VK_WSI_PRESENT_MODE\\b"
+      },
+      "kind": "env",
+      "value_type": "enum",
+      "values": [
+        "fifo",
+        "relaxed",
+        "mailbox",
+        "immediate"
+      ],
+      "description": "Forces the Vulkan window-system present mode that a Mesa Vulkan driver hands the compositor, overriding what the game requested. fifo = v-synced (capped to refresh, no tearing); relaxed = fifo but allows tearing when below refresh; mailbox = triple-buffered, uncapped, no tearing; immediate = uncapped with tearing. Lets you impose vsync behavior / tearing / latency the game doesn't expose.",
+      "intent_type": "both",
+      "intent_note": "how: control vsync/latency/tearing for smoother or lower-latency output. why: also a workaround to force a present mode a game refuses to offer. IMPORTANT SCOPE: this is honored only by Mesa Vulkan drivers (RADV/ANV) — it does NOT affect the NVIDIA proprietary driver. On this box it applies to the Intel iGPU (ANV) path only, not the RTX 4090.",
+      "category": "display-wayland",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Changes present timing only; immediate/mailbox trade tearing/power for latency. No stability risk. No effect on NVIDIA proprietary path.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active Mesa env var. Mesa-only — irrelevant to the NVIDIA dGPU here."
+      },
+      "hardware_scope": "mesa-only",
+      "confidence": "high",
+      "doc_sources": [
+        "https://docs.mesa3d.org/envvars.html",
+        "https://www.phoronix.com/news/Mesa-VLK-WSI-Wayland-IMMEDIATE"
+      ]
+    },
+    {
+      "id": "proton_no_wm_decoration",
+      "match": {
+        "canonical_key": "PROTON_NO_WM_DECORATION",
+        "aliases": [],
+        "regex": "(?i)\\bPROTON_NO_WM_DECORATION\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Tells Proton not to request window-manager decorations (title bar/borders) for the game window. Fixes borderless-fullscreen problems and a class of input bugs where mouse clicks pass through to the desktop behind the game.",
+      "intent_type": "why",
+      "intent_note": "Workaround for windowing/input quirks (borderless-fullscreen misbehavior, click-through) — particularly under tiling/Wayland compositors. Relevant on this KDE/Wayland box.",
+      "category": "display-wayland",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Targeted windowing fix; low downside, only matters for the specific decoration/click-through bug.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active Proton runtime option."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://wiki.cachyos.org/configuration/gaming/",
+        "https://www.protondb.com/help/improving-performance"
+      ]
+    },
+    {
+      "id": "proton_eac_runtime",
+      "match": {
+        "canonical_key": "PROTON_EAC_RUNTIME",
+        "aliases": [
+          "EasyAntiCheat Runtime",
+          "Proton EasyAntiCheat Runtime",
+          "PROTON_USE_EAC_LINUX"
+        ],
+        "regex": "(?i)\\b(PROTON_EAC_RUNTIME|PROTON_USE_EAC_LINUX)\\b"
+      },
+      "kind": "env",
+      "value_type": "path",
+      "description": "Points Proton at the Easy Anti-Cheat runtime so the EAC module loads under Wine. EAC is a client-integrity system; for a game to be playable online on Linux the developer must have enabled EAC-for-Linux server-side AND the matching runtime must load. This variable/runtime is the client half of that. (Also covers the PROTON_USE_EAC_LINUX spelling some reports use to select the EAC Linux runtime.)",
+      "intent_type": "why",
+      "intent_note": "Pure anti-cheat constraint: titles using Easy Anti-Cheat need Proton's EAC runtime so the anti-cheat initializes and the server doesn't reject the session. It has NO performance meaning. Crucially, the user cannot force online acceptance with it — if the developer hasn't enabled EAC-for-Linux server-side, no local setting helps. IMPORTANT NUANCE: when a developer HAS enabled EAC-for-Linux, the runtime is provided automatically and the game works online out of the box — e.g. ARC Raiders (Embark) is Steam Deck Verified (Nov 2025) and runs online on Proton 10 with EAC accepted, with NO explicit EAC launch flag. So the ABSENCE of any EAC flag in a known-good online config is EXPECTED, not a missing parameter — do not synthesize one.",
+      "category": "anti-cheat-or-drm",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Enables legitimate online play where the developer supports it; no instability. Risk is purely 'does nothing if the title isn't EAC-Linux-enabled'.",
+      "obsolescence": {
+        "status": "current",
+        "since": "Proton 7.0",
+        "note": "Active. Steam ships a downloadable 'Proton EasyAntiCheat Runtime'. Success is exogenous (developer-gated), so treat acceptance as a recency-windowed flag, not a config win."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2022/02/proton-7-easy-anti-cheat-improvements-more-games-for-linux-a-steam-deck/",
+        "https://boilingsteam.com/enabling-eac-support-on-linux-now-easier/"
+      ]
+    },
+    {
+      "id": "proton_battleye_runtime",
+      "match": {
+        "canonical_key": "PROTON_BATTLEYE_RUNTIME",
+        "aliases": [
+          "BattlEye Runtime",
+          "Proton BattlEye Runtime"
+        ],
+        "regex": "(?i)\\bPROTON_BATTLEYE_RUNTIME\\b"
+      },
+      "kind": "env",
+      "value_type": "path",
+      "description": "The BattlEye equivalent of the EAC runtime: makes Proton load the BattlEye anti-cheat module so a BattlEye-protected game can pass its integrity check on Linux.",
+      "intent_type": "why",
+      "intent_note": "Anti-cheat constraint identical in spirit to EAC: BattlEye must be officially enabled for Proton by the developer; the runtime is the client side. No perf meaning, and it cannot force acceptance for titles the publisher hasn't enabled.",
+      "category": "anti-cheat-or-drm",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Enables sanctioned online play where supported; no instability.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active. Developer-gated like EAC; recency-windowed acceptance flag, not a config win."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://itsfoss.gitlab.io/post/battleeye--easy-anti-cheat-official-support-added-for-steam-play-proton-on-linux/",
+        "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/1513"
+      ]
+    },
+    {
+      "id": "game_arg_eac_nop",
+      "match": {
+        "canonical_key": "-eac-nop",
+        "aliases": [
+          "-eac-nop-loaded"
+        ],
+        "regex": "(?i)(^|\\s)-eac-nop(-loaded)?\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "A game/launcher argument that tells some EAC-integrated titles to start without bringing up the Easy Anti-Cheat bootstrapper — effectively launching the game offline/uninstrumented.",
+      "intent_type": "why",
+      "intent_note": "Anti-cheat bypass for OFFLINE/singleplayer launch: it skips the EAC bootstrap so the game starts on Linux when the anti-cheat would otherwise block or hang it. It does NOT make online multiplayer work and using it where the server expects EAC can mean rejection or a ban.",
+      "category": "anti-cheat-or-drm",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "high",
+      "parity_risk_rationale": "Fine for offline/campaign play; for ONLINE play it can trip anti-cheat and risk an account ban — and is unnecessary for titles where EAC is dev-enabled on Linux (e.g. ARC Raiders works online OOB). See top-level anti_cheat_guidance; gate by online-vs-offline and warn.",
+      "obsolescence": {
+        "status": "current",
+        "since": "game-specific",
+        "note": "Per-title flag; only works where the game implements it."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://forums.gentoo.org/viewtopic-t-1147585-highlight-.html"
+      ]
+    },
+    {
+      "id": "game_arg_no_battleye",
+      "match": {
+        "canonical_key": "-nobattleye",
+        "aliases": [
+          "-noBE",
+          "-nobe"
+        ],
+        "regex": "(?i)(^|\\s)-no(battleye|be)\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "Game argument that launches a BattlEye-protected title without starting BattlEye, used to reach offline/singleplayer content when the anti-cheat would otherwise block the game on Linux.",
+      "intent_type": "why",
+      "intent_note": "Same anti-cheat-bypass logic as -eac-nop but for BattlEye. Enables offline launch; online play stays blocked/risky (potential ban).",
+      "category": "anti-cheat-or-drm",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "high",
+      "parity_risk_rationale": "Offline-only safe; online use risks rejection/account ban and is pointless where BattlEye is dev-enabled on Linux. See top-level anti_cheat_guidance; gate and warn.",
+      "obsolescence": {
+        "status": "current",
+        "since": "game-specific",
+        "note": "Per-title flag."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/1513"
+      ]
+    },
+    {
+      "id": "launch_pattern_exe_swap",
+      "match": {
+        "canonical_key": "exe-swap-sed-eval",
+        "aliases": [
+          "eval $(echo \"%command%\" | sed ...)",
+          "launcher bypass"
+        ],
+        "regex": "(?i)eval.*sed|sed.*%command%|s[#/].+\\.exe.+\\.exe"
+      },
+      "kind": "launch-pattern",
+      "value_type": "string",
+      "description": "A shell trick in the launch options that rewrites the command Steam would run: it pipes \"%command%\" through sed to replace the launcher/anti-cheat executable path with the real game .exe, then evals the result. The effect is to start the actual game binary directly and skip a protected or broken launcher (a publisher launcher, a 2K/Paradox/EOS launcher, or an EAC bootstrap exe).",
+      "intent_type": "why",
+      "intent_note": "Canonical 'why' pattern: it exists to bypass a launcher/DRM/anti-cheat wrapper that fails or refuses to run under Proton, by swapping which .exe gets executed. Nothing about visuals or speed — it's purely 'make the right binary launch'. For anti-cheat launchers this carries the same online ban risk as -eac-nop.",
+      "category": "anti-cheat-or-drm",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "high",
+      "parity_risk_rationale": "Bypassing the intended launcher can break update/DRM/anti-cheat flows; harmless for a nuisance launcher, but if it sidesteps anti-cheat for an ONLINE title it risks an account ban (and is unnecessary where the anti-cheat is dev-enabled on Linux, e.g. ARC Raiders — see top-level anti_cheat_guidance). Highly game-specific and fragile across updates.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Per-game; the exact sed expression rots when the publisher renames files. Treat as fragile."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://steamcommunity.com/sharedfiles/filedetails/?id=2600050365",
+        "https://steamcommunity.com/app/983870/discussions/0/4362376160464295138/"
+      ]
+    },
+    {
+      "id": "game_arg_force_dx11",
+      "match": {
+        "canonical_key": "-dx11",
+        "aliases": [
+          "-d3d11",
+          "-force-d3d11",
+          "/dx11"
+        ],
+        "regex": "(?i)(^|\\s)[-/](force-)?d(x|3d)11\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "Forces a game that supports multiple renderers to use its Direct3D 11 path. Under Proton this routes through DXVK, which is the most mature and stable translation layer — often more reliable than a game's DX12 path on Linux.",
+      "intent_type": "both",
+      "intent_note": "why: frequently chosen because the game's DX12/Vulkan path is buggy under Proton and DX11/DXVK 'just works'. how: can also be steadier frame times.",
+      "category": "dxvk-rendering",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "DX11/DXVK is the best-trodden path; forcing it is usually a safe stabilizer, occasionally leaving DX12-only visual features off.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; per-game."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://www.pcgamingwiki.com/wiki/DXVK"
+      ]
+    },
+    {
+      "id": "game_arg_force_dx12",
+      "match": {
+        "canonical_key": "-dx12",
+        "aliases": [
+          "-d3d12",
+          "-force-d3d12",
+          "/dx12"
+        ],
+        "regex": "(?i)(^|\\s)[-/](force-)?d(x|3d)12\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "Forces the Direct3D 12 renderer, which under Proton goes through VKD3D-Proton. Picks up DX12-only features (ray tracing, better multithreading) but exercises a less mature layer than DXVK, so it can stutter or crash where DX11 wouldn't.",
+      "intent_type": "both",
+      "intent_note": "how: unlocks DX12 features/perf. why: sometimes required because a game's DX11 path is broken or absent.",
+      "category": "vkd3d-d3d12",
+      "effect_axes": [
+        {
+          "axis": "visual-fidelity",
+          "direction": "improves"
+        },
+        {
+          "axis": "performance",
+          "direction": "mixed"
+        }
+      ],
+      "parity_risk": "medium",
+      "parity_risk_rationale": "VKD3D is solid but newer than DXVK; DX12 can mean more shader-comp stutter or feature-specific bugs on Linux.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; per-game."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://github.com/HansKristian-Work/vkd3d-proton/blob/master/README.md"
+      ]
+    },
+    {
+      "id": "game_arg_force_vulkan",
+      "match": {
+        "canonical_key": "-vulkan",
+        "aliases": [
+          "-force-vulkan",
+          "/vulkan"
+        ],
+        "regex": "(?i)(^|\\s)[-/](force-)?vulkan\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "Selects a game's native Vulkan renderer (for engines that ship one, e.g. id Tech, some Source 2 titles). On Linux this avoids any D3D translation entirely, so it's frequently the smoothest and most stable option when available.",
+      "intent_type": "how",
+      "intent_note": "Native Vulkan dodges the D3D->Vulkan translation cost/quirks. why-ish: occasionally the only path that renders correctly under Proton.",
+      "category": "dxvk-rendering",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        },
+        {
+          "axis": "native-parity",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Native Vulkan is typically the best Linux path; risk only if the game's Vulkan backend is itself immature.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active; only meaningful for engines with a real Vulkan renderer."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://www.pcgamingwiki.com/wiki/DXVK"
+      ]
+    },
+    {
+      "id": "game_arg_skip_launcher",
+      "match": {
+        "canonical_key": "-nolauncher",
+        "aliases": [
+          "--launcher-skip",
+          "--skip-launcher",
+          "-SkipBuildPatchPrereq",
+          "-nostartupmovies"
+        ],
+        "regex": "(?i)(^|\\s)(-{1,2})(no(launcher|startupmovies)|skip-?launcher|launcher-skip|SkipBuildPatchPrereq)\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "A family of args that skip a game's pre-game launcher window, prerequisite installer, or startup videos. On Linux the separate launcher process often fails to spawn the game, hangs, or renders as a black window under Proton, so skipping it goes straight to the game.",
+      "intent_type": "why",
+      "intent_note": "Workaround for launcher processes that misbehave under Proton (black-screen, won't hand off, won't focus). UX/compat, not a perf lever.",
+      "category": "launcher-or-ux",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Skipping a nuisance launcher is generally safe; rare cases where the launcher applies needed updates/config.",
+      "obsolescence": {
+        "status": "current",
+        "since": "game-specific",
+        "note": "Per-title flag names vary; this groups the common ones."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://steamcommunity.com/app/983870/discussions/0/4362376160464295138/"
+      ]
+    },
+    {
+      "id": "game_arg_use_all_cores",
+      "match": {
+        "canonical_key": "-USEALLAVAILABLECORES",
+        "aliases": [
+          "-useallavailablecores"
+        ],
+        "regex": "(?i)(^|\\s)-USEALLAVAILABLECORES\\b"
+      },
+      "kind": "game-arg",
+      "value_type": "flag",
+      "description": "An Unreal Engine argument telling the engine to spread work across all CPU cores instead of defaulting to fewer. On CPU-bound UE titles it can reduce single-core bottleneck stutter and lift average FPS.",
+      "intent_type": "how",
+      "intent_note": "Better CPU utilization for Unreal Engine games.",
+      "category": "cpu-scheduling",
+      "effect_axes": [
+        {
+          "axis": "performance",
+          "direction": "improves"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "UE-only; usually harmless, effect varies by title and is sometimes negligible/placebo on already-threaded builds.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Unreal-Engine-specific; not all UE games honor it."
+      },
+      "hardware_scope": "universal",
+      "confidence": "medium",
+      "doc_sources": [
+        "https://steamcommunity.com/app/393380/discussions/6/3455968050308138342/",
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/command-line-arguments"
+      ]
+    },
+    {
+      "id": "steamdeck_spoof",
+      "match": {
+        "canonical_key": "SteamDeck",
+        "aliases": [
+          "SteamDeck=1",
+          "-steamdeck"
+        ],
+        "regex": "(?i)\\bSteamDeck=1\\b|(^|\\s)-steamdeck\\b"
+      },
+      "kind": "env",
+      "value_type": "boolean",
+      "values": [
+        "1"
+      ],
+      "description": "Makes a game believe it is running on a Steam Deck (SteamDeck=1 as a launch env, or Steam started with -steamdeck). Some titles only expose Deck-friendly defaults, controller UI, or a working code path when they detect Deck hardware; a few (e.g. Forspoken) needed this to launch at all on desktop Linux.",
+      "intent_type": "why",
+      "intent_note": "Spoof to satisfy a game's hardware/branch check — unlocks a Deck-specific code path or settings preset on a non-Deck machine.",
+      "category": "wine-compat-workaround",
+      "effect_axes": [
+        {
+          "axis": "native-parity",
+          "direction": "enables"
+        }
+      ],
+      "parity_risk": "low",
+      "parity_risk_rationale": "Mostly harmless spoof; can lock you into Deck-tuned low settings or Deck UI on a desktop, so undo it once the game runs.",
+      "obsolescence": {
+        "status": "current",
+        "since": "ongoing",
+        "note": "Active per-game workaround."
+      },
+      "hardware_scope": "universal",
+      "confidence": "high",
+      "doc_sources": [
+        "https://www.gamingonlinux.com/2023/01/forspoken-desktop-linux-spoof-steam-deck/",
+        "https://github.com/ValveSoftware/steam-for-linux/issues/11947"
+      ]
+    }
+  ]
+}
