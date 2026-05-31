@@ -1,0 +1,30 @@
+# Phase 0 oracle-feasibility — environment
+captured (UTC): Sun May 31 01:53:37 PM UTC 2026
+run dir: /home/jangmanj/Projects/Jangs-Lab/Gamepad-Lab/runs/20260531T135337Z-phase0-oracle-feasibility
+
+## host
+Linux JangsJail 7.1.0-rc5-2-cachyos-rc #1 SMP PREEMPT_DYNAMIC Thu, 28 May 2026 19:52:15 +0000 x86_64 GNU/Linux
+distro: CachyOS (Arch-based), Wayland/KDE, NVIDIA
+
+## toolchain
+gcc (GCC) 16.1.1 20260430
+clang version 22.1.6
+cmake version 4.3.3
+lld: LLD 22.1.6 (compatible with GNU linkers)
+nproc: 32
+
+## JSM fork state
+HEAD: 27f678e7f0288f99cf410e369009f6b5404169c8
+branch: branch-a-port
+status:
+
+## relevant libs (pkg-config --modversion)
+sdl3:                        3.4.8
+hidapi:                      (absent)
+libusb-1.0:                  1.0.30
+libevdev:                    1.13.6
+gtkmm-3.0:                   3.24.10
+ayatana-appindicator3-0.1:   0.5.94
+xscrnsaver:                  1.2.5
+wayland-client:              1.25.0
+dbus-1:                      1.16.2

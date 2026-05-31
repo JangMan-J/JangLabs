@@ -1,0 +1,29 @@
+# Clean-exit std::terminate (SIGABRT + core) — fixed in JangsJyro-JSM @ ae7accc
+# Cause: file-static std::thread `ttyForwardThread` (src/linux/InputHelpers.cpp:770,
+# created by initConsole()) was never join()'d or detach()'d. On ANY clean quit
+# (SIGTERM/SIGINT -> terminateHandler -> WriteToConsole("QUIT") -> main loop exits ->
+# main() returns -> exit()), __cxa_finalize destroys static-duration objects; ~thread()
+# on a still-joinable thread calls std::terminate(). NOT SIGTERM-specific — fires on
+# tray Quit / typed QUIT / Ctrl-C too. From the systemd-coredump core (aborting thread):
+
+#0  0x00007f6e7f6adfbb in pthread_kill () from /usr/lib/libc.so.6
+#1  0x00007f6e7f644c88 in raise () at /usr/lib/libc.so.6
+#2  0x00007f6e7f625795 in abort () at /usr/lib/libc.so.6
+#3  0x00007f6e7fa9ad14 in ??? () at /usr/lib/libstdc++.so.6        # __gnu_cxx::__verbose_terminate_handler
+#4  0x00007f6e7fabb4bc in ??? () at /usr/lib/libstdc++.so.6
+#5  0x00007f6e7fa9a654 in std::terminate() () at /usr/lib/libstdc++.so.6
+#6  0x000055a6b04d95ad in std::thread::~thread() ()               # bare static thread, no enclosing class dtor
+#7  0x00007f6e7f6478f0 in ??? () at /usr/lib/libc.so.6            # __cxa_finalize
+#8  0x00007f6e7f6479e0 in exit () at /usr/lib/libc.so.6
+#9  0x00007f6e7f627c95 in ??? () at /usr/lib/libc.so.6
+#10 0x00007f6e7f627dcb in __libc_start_main () at /usr/lib/libc.so.6
+#11 0x000055a6b04043e5 in _start ()
+
+# Other live threads at the time (all SAFE): PollingThreads (AutoConnect/AutoLoad — join
+# in dtor), tray g_main_loop_run (joined in StatusNotifierItem dtor), FIFO thread
+# (detached), SDL/libusb/glib workers. Only the bare static forwarder thread aborts.
+#
+# Fix: detach ttyForwardThread (and the dormant consoleForwardThread) — matches the
+# initFifoCommandListener .detach() idiom; join() would deadlock on the blocking
+# getline(/dev/tty). Verified: 3/3 SIGTERM exits return status 0, no "terminate called",
+# no core; tray + PollingThread dtors now run end-to-end without deadlock.

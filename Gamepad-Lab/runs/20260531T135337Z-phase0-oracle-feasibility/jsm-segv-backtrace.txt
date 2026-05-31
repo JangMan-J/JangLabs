@@ -1,0 +1,25 @@
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+  <https://debuginfod.cachyos.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+[New Thread 0x7ffff2bff6c0 (LWP 100488)]
+[New Thread 0x7ffff1fc96c0 (LWP 100490)]
+fopen /dev/tty: No such device or address
+[Thread 0x7ffff1fc96c0 (LWP 100490) exited]
+[New Thread 0x7ffff13936c0 (LWP 100491)]
+[New Thread 0x7fffebfff6c0 (LWP 100492)]
+[New Thread 0x7fffeb3c96c0 (LWP 100493)]
+
+Thread 6 "JoyShockMapper" received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 0x7fffeb3c96c0 (LWP 100493)]
+0x0000555555638e7a in JSM::AutoConnect::AutoConnectPoll(void*) ()
+#0  0x0000555555638e7a in JSM::AutoConnect::AutoConnectPoll(void*) ()
+#1  0x000055555559b6f4 in PollingThread::pollFunction(void*) ()
+#2  0x00007ffff6707066 in ?? () from /usr/lib/libstdc++.so.6
+#3  0x00007ffff62abd58 in ?? () from /usr/lib/libc.so.6
+#4  0x00007ffff634a5dc in ?? () from /usr/lib/libc.so.6
