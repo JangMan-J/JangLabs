@@ -45,10 +45,10 @@ For type-checked languages (Python, C/C++, TypeScript, Rust), the relevant LSP p
 
 After completing a non-trivial task, if either of the following is true, **save a feedback memory before ending the turn**:
 
-- **`[Method]`** — A non-default approach surpassed the default, in a way that would benefit future sessions. Prefix the memory `name:` field with `[Method] ` and include **Why** + **How to apply**.
-- **`[Fumble]`** — A default Claude behavior was likely to mislead and you caught it (or it tripped you and you recovered). Prefix the memory `name:` field with `[Fumble] ` and include **What happens by default** + **Better path** + **How to spot it ahead of time**.
+- **`[Method]`** — A non-default approach surpassed the default, in a way that would benefit future sessions. Name the file `method-<kebab-slug>` and give its `MEMORY.md` index entry a `[Method]` title prefix; include **Why** + **How to apply**.
+- **`[Fumble]`** — A default Claude behavior was likely to mislead and you caught it (or it tripped you and you recovered). Name the file `fumble-<kebab-slug>` and give its `MEMORY.md` index entry a `[Fumble]` title prefix; include **What happens by default** + **Better path** + **How to spot it ahead of time**.
 
-These prefixes make `MEMORY.md` scannable as a patterns/antipatterns library. Do not write `[Method]`/`[Fumble]` memories speculatively — only when a real session showed the win or the trip.
+The `[Method]`/`[Fumble]` title prefixes make `MEMORY.md` scannable as a patterns/antipatterns library. Keep the YAML `name:` a plain kebab slug — NEVER `name: [Fumble] …` (unquoted brackets are invalid YAML). Do not write `[Method]`/`[Fumble]` memories speculatively — only when a real session showed the win or the trip.
 
 ## Hook-aware editing
 
