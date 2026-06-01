@@ -18,6 +18,27 @@ can't separate them — and extest's relevance is an untested follow-up. Durable
 `findings/steam_input_linux.md` + `findings/jsm_linux_port.md`; runs `20260601T065426Z-phase0-runtime-smoke/`
 and `20260601T070951Z-phase0b-steam-input/`.
 
+**▶ NEXT SESSION — START HERE (bookmarked 2026-06-01).** Phase 0 is **done + committed** (`5ca9307`);
+repo clean. Next is **Phase 1 — tracer bullet** (§10, §1-DoD), but with a **crux Phase 0 deferred:**
+*both* Phase 0 runs drove the lanes with the **real pad**. Phase 1 says "one `uinput` **trace**" — i.e.
+**synthetic** injection — and that capability is **unproven on both lanes.** So the literal first step
+of Phase 1 is a **synthetic-injection spike** (NOT the comparator, NOT a workflow — it's one device node,
+run-and-observe on one live system ⇒ serial/inline; the parallel fan-out points are Phase 2's seven quick
+wins and Phase 4's adversarial set).
+- **JSM lane (cheapest, no Steam/pad dep — recommended first):** does a synthetic virtual gamepad drive
+  JSM→`SPACE` at evdev? Try a plain `uinput` EV_KEY/EV_ABS gamepad first (SDL generic evdev-joystick
+  path); **escalate to a `uhid` spoof of the native `2dc8:6012` + 34-byte report only if SDL won't
+  classify** a generic device — that spoof makes the fork classify it as
+  `JS_TYPE_8BITDO_ULTIMATE2_WIRELESS` and folds R2 (gyro injection) in early for digital buttons.
+- **Steam Input lane:** untested whether Steam Input recognizes a *synthetic* controller at all; observe
+  the result at XI2 via `tools/xi2_capture.py` (Steam = seat plane, not evdev — Phase 0b).
+- **Box-ready (verified 2026-06-01):** `/dev/uinput` accessible (user in `input`, `uinput` loaded);
+  pad present (`hidraw3`, USB); Steam **running** w/ Steam Input on for the 8BitDo.
+- **Pending decision (asked, deferred to next session):** entry point = **(A) JSM-lane spike first**
+  *(recommended)* vs **(B) full both-lanes tracer at once** (needs Steam Input configured for the
+  synthetic controller + a comparator stub). Re-ask before touching the device.
+- This bookmark edit is **uncommitted** by design (commit-only-when-asked); it's the resume marker.
+
 **JSM source (directed):** the user's fork **`JangsJyro-JSM`** —
 `https://github.com/JangMan-J/JangsJyro-JSM.git`, branch **`branch-a-port`**, local working copy
 `~/Projects/JangsJyro-JSM`. This is *the* JSM source for the lab (not an upstream clone). Referenced by
