@@ -50,3 +50,4 @@ already in `metadata.type` and the `[Method]`/`[Fumble]` title prefix.)
 - self-kill-trap — `pkill -f <substr>` self-kills the tool shell; use `pkill -x <comm>`
 - no-permission-scope-creep — don't bolt allow/deny onto a tool the user didn't ask to be one; warn/confirm instead
 - edit-race-atomic-rewrite — Edit tool loses its read-state race on a file the live app rewrites (e.g. settings.json mid-session); rewrite atomically out-of-band (jq/sed → mv) instead
+- repoint-abs-symlinks-on-rename — moving/renaming a dir breaks absolute symlinks pointing INTO it; re-point in the SAME command (no tool-call boundary) and beware `[ -e ]` skips broken links (use `|| [ -L ]`, or `ln -sfn`)
