@@ -1,0 +1,9 @@
+{
+  "autonomy": "standard",
+  "budget": "normal",
+  "createdAt": "2026-05-25T06:29:27+00:00",
+  "objective": "Determine if linux-cachyos-bore (7.0.10) can be safely ported to a BORE config for the 7.1-rc kernel; produce the safe path",
+  "runId": "20260525T062927Z-determine-if-linux-cachyos-bore-7-0-10-can-be-sa",
+  "status": "active",
+  "strategy": "red_team_validation"
+}

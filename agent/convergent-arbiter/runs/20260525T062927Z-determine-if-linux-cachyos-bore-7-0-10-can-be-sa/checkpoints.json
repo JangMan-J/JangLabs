@@ -1,0 +1,16 @@
+[
+  {
+    "checkpointId": "cp-001",
+    "evidence": [],
+    "nextAction": "continue",
+    "phase": "synthesis",
+    "risks": [],
+    "role": "arbiter",
+    "summary": "VALIDATED: BORE is set by prepare() not the config (base configs differ only by 7.0->7.1 version churn, 0 scheduler/LTO diffs). Hand-edited bore dir has 4 build-breaking bugs: (1) 9 sources vs 3 b2sums, (2) 7.1 bore patch fails on 7.0.10 tree (fork.c+fair.c hunks), (3) nvidia patches misrouted to kernel tree, (4) dkms-clang already-applied. Decision: Strategy B = set _cpusched=bore (+_use_llvm_lto=none for GCC) on the already-7.1 rc dir + updpkgsums. printsrcinfo proves 3 sources for GCC flavor, pkgbase=linux-cachyos-rc-gcc. Root-cause framing: B delegates tarball<->patch version-matching to CachyOS upstream, eliminating the mismatch class that broke the hand-edit.",
+    "testResults": [],
+    "testsRun": [],
+    "timestamp": "2026-05-25T06:35:51+00:00",
+    "validatedDiscoveries": [],
+    "worker": "arbiter"
+  }
+]

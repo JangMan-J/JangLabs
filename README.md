@@ -1,4 +1,4 @@
-# Jangs-Lab
+# JangLabs
 
 Personal workspace for AI-assisted (Claude Code) experiments, investigations, and tooling. Each subdirectory is an independent "lab" with its own focus.
 
@@ -6,9 +6,11 @@ Personal workspace for AI-assisted (Claude Code) experiments, investigations, an
 
 | Lab | Focus |
 |-----|-------|
-| [`Agent-Lab/`](./Agent-Lab) | Multi-agent coordination skills and ACP arbiter prompts. |
-| [`ArchLinux-Lab/`](./ArchLinux-Lab) | Personal Arch Linux install guide (rendered HTML). |
-| [`Gamepad-Lab/`](./Gamepad-Lab) | 8BitDo Ultimate 2 Wireless. Currently: Linux-side input-latency / gyro troubleshooting on the Arch install above. Preserved long-term direction in `vision/`: a Steam-Input-vs-JSM behavioral comparison lab. |
+| [`agent/`](./agent) | Multi-agent coordination skills and ACP / Agent-Teams arbiter prompts. |
+| [`claude/`](./claude) | Claude Code harness — hooks, CLAUDE.md fragment, settings; installed globally via `install.sh`. |
+| [`gamepad/`](./gamepad) | 8BitDo Ultimate 2 Wireless. Linux-side input-latency / gyro troubleshooting. Preserved long-term direction in `vision/`: a Steam-Input-vs-JSM behavioral comparison lab. |
+| [`proton/`](./proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
+| [`theme/`](./theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
 
 ## Working with this repo
 

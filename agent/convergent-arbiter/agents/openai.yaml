@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convergent Arbiter"
+  short_description: "Evidence-based software work arbitration"
+  default_prompt: "Use $convergent-arbiter to coordinate this task with independent diagnosis, evidence comparison, validation, and final synthesis."

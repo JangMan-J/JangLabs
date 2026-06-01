@@ -53,6 +53,6 @@ desktop.ini
 *.log
 *.tmp
 
-# Claude-Lab installer backups (per-machine, not portable)
-Claude-Lab/.install-backups/
-Claude-Lab/.uninstall-backups/
+# claude harness installer backups (per-machine, not portable)
+claude/.install-backups/
+claude/.uninstall-backups/

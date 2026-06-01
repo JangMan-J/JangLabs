@@ -1,0 +1,508 @@
+#!/usr/bin/env python3
+import argparse
+import hashlib
+import json
+import sys
+import tarfile
+import urllib.parse
+import urllib.request
+import xml.etree.ElementTree as ET
+import zipfile
+from dataclasses import dataclass
+from pathlib import Path
+
+
+API_BASE = "https://api.kde-look.org/ocs/v1"
+USER_AGENT = "JangLabs/theme KDE Store theme downloader"
+
+
+@dataclass(frozen=True)
+class Download:
+    name: str
+    url: str
+    md5: str
+    version: str
+    tags: str
+
+
+@dataclass(frozen=True)
+class Product:
+    product_id: str
+    name: str
+    version: str
+    type_id: str
+    type_name: str
+    xdg_type: str
+    person_id: str
+    created: str
+    changed: str
+    download_count: str
+    score: str
+    summary: str
+    detail_page: str
+    tags: str
+    downloads: tuple[Download, ...]
+
+    def as_dict(self):
+        return {
+            "id": self.product_id,
+            "name": self.name,
+            "version": self.version,
+            "type_id": self.type_id,
+            "type_name": self.type_name,
+            "xdg_type": self.xdg_type,
+            "person_id": self.person_id,
+            "created": self.created,
+            "changed": self.changed,
+            "download_count": self.download_count,
+            "score": self.score,
+            "summary": self.summary,
+            "detail_page": self.detail_page,
+            "tags": self.tags,
+            "downloads": [
+                {
+                    "name": download.name,
+                    "url": download.url,
+                    "md5": download.md5,
+                    "version": download.version,
+                    "tags": download.tags,
+                }
+                for download in self.downloads
+            ],
+        }
+
+
+def text(node, name):
+    child = node.find(name)
+    return child.text.strip() if child is not None and child.text else ""
+
+
+def parse_products(xml_bytes):
+    root = ET.fromstring(xml_bytes)
+    products = []
+    for content in root.findall("./data/content"):
+        downloads = []
+        index = 1
+        while True:
+            url = text(content, f"downloadlink{index}")
+            if not url:
+                break
+            downloads.append(
+                Download(
+                    name=text(content, f"downloadname{index}"),
+                    url=url,
+                    md5=text(content, f"downloadmd5sum{index}"),
+                    version=text(content, f"download_version{index}"),
+                    tags=text(content, f"downloadtags{index}"),
+                )
+            )
+            index += 1
+
+        products.append(
+            Product(
+                product_id=text(content, "id"),
+                name=text(content, "name"),
+                version=text(content, "version"),
+                type_id=text(content, "typeid"),
+                type_name=text(content, "typename"),
+                xdg_type=text(content, "xdg_type"),
+                person_id=text(content, "personid"),
+                created=text(content, "created"),
+                changed=text(content, "changed"),
+                download_count=text(content, "downloads"),
+                score=text(content, "score"),
+                summary=text(content, "summary"),
+                detail_page=text(content, "detailpage"),
+                tags=text(content, "tags"),
+                downloads=tuple(downloads),
+            )
+        )
+    return products
+
+
+def parse_categories(xml_bytes):
+    root = ET.fromstring(xml_bytes)
+    categories = []
+    for category in root.findall("./data/category"):
+        categories.append(
+            {
+                "id": text(category, "id"),
+                "name": text(category, "name"),
+                "display_name": text(category, "display_name"),
+                "parent_id": text(category, "parent_id"),
+                "xdg_type": text(category, "xdg_type"),
+            }
+        )
+    return categories
+
+
+def fetch_url(url):
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request) as response:
+        return response.read()
+
+
+def fetch_categories():
+    return parse_categories(fetch_url(f"{API_BASE}/content/categories"))
+
+
+def split_filters(values):
+    split = []
+    for value in values or ():
+        split.extend(part.strip() for part in str(value).split(",") if part.strip())
+    return tuple(dict.fromkeys(split))
+
+
+def query_products(query, page_size=100, sort_mode=None, page=None):
+    params = {
+        "search": query,
+        "pagesize": str(page_size),
+    }
+    if sort_mode:
+        params["sortmode"] = sort_mode
+    if page is not None:
+        params["page"] = str(page)
+
+    return parse_products(fetch_url(f"{API_BASE}/content/data?{urllib.parse.urlencode(params)}"))
+
+
+def contains_casefold(value, needle):
+    return needle.casefold() in value.casefold()
+
+
+def product_tags(product):
+    return [tag.strip().casefold() for tag in product.tags.split(",") if tag.strip()]
+
+
+def normalize_filter_text(value):
+    normalized = []
+    previous_space = False
+    for character in value.casefold():
+        if character.isalnum():
+            normalized.append(character)
+            previous_space = False
+        elif not previous_space:
+            normalized.append(" ")
+            previous_space = True
+    return " ".join("".join(normalized).split())
+
+
+def text_filter_matches(needle, haystack):
+    normalized_needle = normalize_filter_text(needle)
+    normalized_haystack = normalize_filter_text(haystack)
+    if not normalized_needle:
+        return False
+    variants = {normalized_needle}
+    if normalized_needle.endswith("s"):
+        variants.add(normalized_needle[:-1])
+    return any(variant and variant in normalized_haystack for variant in variants)
+
+
+def category_matches(product, category):
+    normalized = category.strip().casefold()
+    if normalized.isdigit():
+        return product.type_id == normalized
+
+    fields = [
+        product.type_name,
+        product.xdg_type,
+        product.tags,
+    ]
+    return any(text_filter_matches(normalized, field) for field in fields)
+
+
+def filter_products(
+    products,
+    categories=None,
+    exact_name=None,
+    name_contains=None,
+    tag=None,
+    creator=None,
+    has_download=False,
+):
+    category_filters = split_filters(categories)
+    filtered = []
+    for product in products:
+        if category_filters and not any(category_matches(product, category) for category in category_filters):
+            continue
+        if exact_name and product.name.casefold() != exact_name.casefold():
+            continue
+        if name_contains and not contains_casefold(product.name, name_contains):
+            continue
+        if tag and tag.casefold() not in product_tags(product):
+            continue
+        if creator and product.person_id.casefold() != creator.casefold():
+            continue
+        if has_download and not product.downloads:
+            continue
+        filtered.append(product)
+    return filtered
+
+
+def search_products(
+    query,
+    page_size=100,
+    categories=None,
+    sort_mode=None,
+    page=None,
+    exact_name=None,
+    name_contains=None,
+    tag=None,
+    creator=None,
+    has_download=False,
+):
+    products = query_products(query, page_size=page_size, sort_mode=sort_mode, page=page)
+    return filter_products(
+        products,
+        categories=categories,
+        exact_name=exact_name,
+        name_contains=name_contains,
+        tag=tag,
+        creator=creator,
+        has_download=has_download,
+    )
+
+
+def fetch_product(product_id):
+    products = parse_products(fetch_url(f"{API_BASE}/content/data/{product_id}"))
+    if not products:
+        raise ValueError(f"no KDE Store product found for id {product_id}")
+    return products[0]
+
+
+def format_product_ref(product):
+    return f"{product.product_id} ({product.type_name or product.type_id})"
+
+
+def select_product(query_or_id, page_size=100, categories=None):
+    if query_or_id.isdigit():
+        return fetch_product(query_or_id)
+
+    products = search_products(query_or_id, page_size=page_size, categories=categories)
+    if not products:
+        category_list = ", ".join(split_filters(categories)) or "all"
+        raise ValueError(f"no KDE Store products found for {query_or_id!r} in categories {category_list}")
+
+    normalized = query_or_id.casefold()
+    exact_matches = [product for product in products if product.name.casefold() == normalized]
+    if len(exact_matches) == 1:
+        return exact_matches[0]
+    if len(exact_matches) > 1:
+        matches = ", ".join(format_product_ref(product) for product in exact_matches)
+        raise ValueError(
+            f"multiple exact KDE Store products found for {query_or_id!r}: {matches}; "
+            "use a product id or a more specific --category"
+        )
+    return products[0]
+
+
+def write_bytes(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+
+def md5sum(path):
+    digest = hashlib.md5()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def download_product(product, output_dir, download_index=1):
+    if download_index < 1 or download_index > len(product.downloads):
+        raise ValueError(
+            f"{product.name} has {len(product.downloads)} downloads; "
+            f"cannot use download index {download_index}"
+        )
+
+    download = product.downloads[download_index - 1]
+    archive_name = download.name or f"{product.product_id}.download"
+    archive_path = Path(output_dir).expanduser() / archive_name
+    write_bytes(archive_path, fetch_url(download.url))
+
+    if download.md5:
+        actual_md5 = md5sum(archive_path)
+        if actual_md5 != download.md5:
+            archive_path.unlink(missing_ok=True)
+            raise ValueError(
+                f"downloaded {archive_path} md5 {actual_md5}, expected {download.md5}"
+            )
+
+    return archive_path
+
+
+def safe_extract_tar(archive_path, output_dir):
+    output_dir = Path(output_dir).expanduser().resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    extracted = []
+
+    with tarfile.open(archive_path) as archive:
+        for member in archive.getmembers():
+            if member.issym() or member.islnk():
+                raise ValueError(f"refusing to extract link path {member.name!r}")
+            target = (output_dir / member.name).resolve()
+            if output_dir != target and output_dir not in target.parents:
+                raise ValueError(f"refusing to extract unsafe path {member.name!r}")
+            archive.extract(member, output_dir)
+            if member.isfile():
+                extracted.append(target)
+
+    return extracted
+
+
+def safe_extract_zip(archive_path, output_dir):
+    output_dir = Path(output_dir).expanduser().resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    extracted = []
+
+    with zipfile.ZipFile(archive_path) as archive:
+        for member in archive.infolist():
+            mode = member.external_attr >> 16
+            if mode & 0o170000 == 0o120000:
+                raise ValueError(f"refusing to extract link path {member.filename!r}")
+            target = (output_dir / member.filename).resolve()
+            if output_dir != target and output_dir not in target.parents:
+                raise ValueError(f"refusing to extract unsafe path {member.filename!r}")
+            archive.extract(member, output_dir)
+            if not member.is_dir():
+                extracted.append(target)
+
+    return extracted
+
+
+def safe_extract_archive(archive_path, output_dir):
+    archive_path = Path(archive_path)
+    if zipfile.is_zipfile(archive_path):
+        return safe_extract_zip(archive_path, output_dir)
+    if tarfile.is_tarfile(archive_path):
+        return safe_extract_tar(archive_path, output_dir)
+    raise ValueError(f"unsupported archive format for {archive_path}")
+
+
+def write_json(path, output):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(output, handle, indent=2)
+        handle.write("\n")
+
+
+def print_json(output):
+    print(json.dumps(output, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Search and download KDE Store archives through the OCS API."
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    categories_parser = subparsers.add_parser("categories", help="Fetch KDE Store categories")
+
+    search_parser = subparsers.add_parser("search", help="Search KDE Store themes")
+    search_parser.add_argument("query", nargs="?", default="", help="Search text, for example 'Utterly Nord'")
+    search_parser.add_argument(
+        "--category",
+        action="append",
+        help=(
+            "Local product type filter. Accepts a type id or text matched against "
+            "type_name, xdg_type, and tags. May be repeated."
+        ),
+    )
+    search_parser.add_argument("--limit", type=int, default=20, help="Maximum results to print")
+    search_parser.add_argument(
+        "--fetch-limit",
+        type=int,
+        default=100,
+        help="Maximum raw OCS results to fetch before local filtering",
+    )
+    search_parser.add_argument("--page", type=int, help="OCS result page to fetch")
+    search_parser.add_argument("--sort-mode", help="OCS sortmode value, for example 'new' or 'down'")
+    search_parser.add_argument("--exact-name", action="store_true", help="Only keep exact name matches")
+    search_parser.add_argument("--name-contains", help="Only keep products whose name contains text")
+    search_parser.add_argument("--tag", help="Only keep products with this tag")
+    search_parser.add_argument("--creator", help="Only keep products from this person id")
+    search_parser.add_argument("--has-download", action="store_true", help="Only keep products with downloads")
+
+    download_parser = subparsers.add_parser("download", help="Download one KDE Store archive")
+    download_parser.add_argument("query_or_id", help="Exact name, search text, or product id")
+    download_parser.add_argument(
+        "--category",
+        action="append",
+        help=(
+            "Local product type filter for name searches. Accepts a type id or text "
+            "matched against type_name, xdg_type, and tags. May be repeated."
+        ),
+    )
+    download_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("derived/kde-store-downloads"),
+        help="Directory for downloaded archives",
+    )
+    download_parser.add_argument(
+        "--download-index",
+        type=int,
+        default=1,
+        help="1-based download slot from the product metadata",
+    )
+    download_parser.add_argument(
+        "--extract",
+        action="store_true",
+        help="Extract the downloaded tar/zip archive beside the archive file",
+    )
+    download_parser.add_argument("--json", dest="json_path", type=Path, help="Optional JSON report")
+    download_parser.add_argument(
+        "--fetch-limit",
+        type=int,
+        default=100,
+        help="Maximum raw OCS results to fetch before selecting a product",
+    )
+
+    args = parser.parse_args()
+
+    try:
+        if args.command == "categories":
+            print_json(fetch_categories())
+            return 0
+
+        if args.command == "search":
+            products = search_products(
+                args.query,
+                page_size=args.fetch_limit,
+                categories=args.category,
+                sort_mode=args.sort_mode,
+                page=args.page,
+                exact_name=args.query if args.exact_name else None,
+                name_contains=args.name_contains,
+                tag=args.tag,
+                creator=args.creator,
+                has_download=args.has_download,
+            )
+            print_json([product.as_dict() for product in products[: args.limit]])
+            return 0
+
+        product = select_product(args.query_or_id, page_size=args.fetch_limit, categories=args.category)
+        archive_path = download_product(product, args.output_dir, args.download_index)
+        extracted_paths = []
+        if args.extract:
+            extract_dir = archive_path.with_suffix("").with_suffix("")
+            extracted_paths = safe_extract_archive(archive_path, extract_dir)
+
+        output = {
+            "product": product.as_dict(),
+            "archive": str(archive_path),
+            "extracted": [str(path) for path in extracted_paths],
+        }
+        if args.json_path:
+            write_json(args.json_path, output)
+        print_json(output)
+        return 0
+    except (OSError, ValueError, ET.ParseError) as exc:
+        print(f"kde-store-tool: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "roles": {
+    "terminal": [
+      "background",
+      "foreground",
+      "selection_background",
+      "selection_foreground",
+      "cursor",
+      "color0",
+      "color1",
+      "color2",
+      "color3",
+      "color4",
+      "color5",
+      "color6",
+      "color7",
+      "color8",
+      "color9",
+      "color10",
+      "color11",
+      "color12",
+      "color13",
+      "color14",
+      "color15"
+    ],
+    "gui": [
+      "window_background",
+      "view_background",
+      "alternate_background",
+      "primary_text",
+      "secondary_text",
+      "disabled_text",
+      "button_background",
+      "button_hover_background",
+      "button_pressed_background",
+      "button_default_background",
+      "button_disabled_background",
+      "border",
+      "separator",
+      "focus_ring",
+      "selection_background",
+      "selection_foreground",
+      "accent",
+      "accent_hover",
+      "accent_pressed",
+      "tooltip_background",
+      "tooltip_text",
+      "menu_background",
+      "menu_hover_background",
+      "scrollbar_track",
+      "scrollbar_thumb"
+    ]
+  },
+  "known_gui_only_axes": [
+    {
+      "family": "catppuccin",
+      "axis": "accent",
+      "examples": [
+        "rosewater",
+        "flamingo",
+        "pink",
+        "mauve",
+        "red",
+        "maroon",
+        "peach",
+        "yellow",
+        "green",
+        "teal",
+        "sky",
+        "sapphire",
+        "blue",
+        "lavender"
+      ]
+    }
+  ],
+  "sample_classifications": [
+    "terminal_direct",
+    "terminal_near_neighbor",
+    "reference_gui_palette",
+    "accent_axis",
+    "rendered_or_artifact"
+  ],
+  "terminal_role_weights": [
+    {
+      "tier": 1,
+      "roles": [
+        "background",
+        "foreground"
+      ],
+      "meaning": "Dominant terminal display roles; strongest evidence for desktop base surface and primary text."
+    },
+    {
+      "tier": 2,
+      "roles": [
+        "selection_background",
+        "selection_foreground",
+        "cursor"
+      ],
+      "meaning": "Terminal interaction roles; strong evidence for selected rows/text, cursor, focus, and active affordances."
+    },
+    {
+      "tier": 3,
+      "roles": [
+        "color0",
+        "color8",
+        "color7",
+        "color15"
+      ],
+      "meaning": "Neutral ramp evidence for surfaces, borders, disabled text, secondary text, and contrast hierarchy."
+    },
+    {
+      "tier": 4,
+      "roles": [
+        "color1",
+        "color9",
+        "color2",
+        "color10",
+        "color3",
+        "color11"
+      ],
+      "meaning": "High-confidence semantic status families: error/destructive, success/addition, warning/attention."
+    },
+    {
+      "tier": 5,
+      "roles": [
+        "color4",
+        "color12",
+        "color5",
+        "color13",
+        "color6",
+        "color14"
+      ],
+      "meaning": "Medium-confidence accent families for links, headings, prompts, paths, info, navigation, and special syntax."
+    }
+  ]
+}
