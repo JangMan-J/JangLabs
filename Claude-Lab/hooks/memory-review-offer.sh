@@ -9,7 +9,7 @@
 # Capped at one offer per local day. The Python engine handles per-file
 # back-off and the 5-decline auto-flip.
 #
-# NOTE on the python3 spawn: Claude-Lab convention prefers POSIX shell over
+# NOTE on the python3 spawn: claude/ convention prefers POSIX shell over
 # interpreter spawns. This hook is an exception by design — it runs at most
 # once per local day (the marker short-circuits subsequent firings), and the
 # game state machine is too stateful for shell + jq to handle cleanly.
