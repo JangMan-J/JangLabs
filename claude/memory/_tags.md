@@ -51,3 +51,20 @@ already in `metadata.type` and the `[Method]`/`[Fumble]` title prefix.)
 - no-permission-scope-creep — don't bolt allow/deny onto a tool the user didn't ask to be one; warn/confirm instead
 - edit-race-atomic-rewrite — Edit tool loses its read-state race on a file the live app rewrites (e.g. settings.json mid-session); rewrite atomically out-of-band (jq/sed → mv) instead
 - repoint-abs-symlinks-on-rename — moving/renaming a dir breaks absolute symlinks pointing INTO it; re-point in the SAME command (no tool-call boundary) and beware `[ -e ]` skips broken links (use `|| [ -L ]`, or `ln -sfn`)
+
+## Denylist
+Generic tokens rejected as memory tags — too broad to route on. To use one anyway, add it to a facet section above AND add a matching line under `## Policy overrides`.
+- bug — too generic; use the specific failure-domain tag plus a method-pattern.
+- config — too generic; use the specific domain (kde-plasma, shell, boot, …).
+- file — too generic; use a path-tag rule or a domain tag.
+- linux — too generic; use a specific component/distro tag.
+- memory — too generic; use a specific retrieval/claude-harness tag.
+- setup — too generic; use domain + method-pattern tags.
+- tool — too generic; use the specific tool tag (systemd, git, pacman, …).
+- fix — too generic; name the domain + the method-pattern.
+- issue — too generic; name the domain + the symptom.
+- note — too generic; not a routing signal.
+- problem — too generic; name the domain.
+- troubleshoot — too generic; use the domain + verify-live/dont-declare-fixed-early.
+
+## Policy overrides
