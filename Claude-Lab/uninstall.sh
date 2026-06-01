@@ -2,6 +2,7 @@
 # Claude-Lab uninstaller. Dry-run by default; pass --apply to commit.
 # Reverses install.sh:
 #   1. Removes ~/.claude/hooks/<name>.sh symlinks that point into Claude-Lab/
+#   1b. Removes the _review_game.py symlink from the box-brain memory store
 #   2. Removes the CLAUDE.md fragment between sentinel comments
 #   3. Removes our hook entries from settings.json (matched by command path)
 # Symmetric with install.sh: removes exactly what it adds (hooks, the CLAUDE.md
@@ -51,6 +52,17 @@ for src in "$HOOKS_SRC"/*.sh; do
     say "skip: $dst is not a symlink to our source"
   fi
 done
+
+# 1b. memory engine symlink
+say "==> memory engine"
+ENGINE_SRC=$LAB_DIR/memory/_review_game.py
+PROJECT_KEY=$(printf '%s' "$HOME" | tr '/' '-')
+ENGINE_DST=$CLAUDE_HOME/projects/$PROJECT_KEY/memory/_review_game.py
+if [ -L "$ENGINE_DST" ] && [ "$(readlink "$ENGINE_DST")" = "$ENGINE_SRC" ]; then
+  run "rm '$ENGINE_DST'"
+else
+  say "skip: $ENGINE_DST is not a symlink to our source"
+fi
 
 # 2. CLAUDE.md fragment
 say "==> CLAUDE.md"

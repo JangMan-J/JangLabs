@@ -18,9 +18,22 @@ Before invoking a CLI you have not used in this session, or writing a config you
 
 For library/framework/CLI API surface, query **context7** before writing code. Do not guess flags, function signatures, or version-specific behavior. Context7 is loaded for this reason.
 
+## Parallelism
+
+Use parallelism whenever it offers a real benefit and the units are genuinely independent; stay serial when it doesn't. The win is **breadth**, not speed-at-any-cost.
+
+- **Batch independent tool calls** into one message (several reads/greps/unrelated shell) instead of serializing them — free latency, no downside.
+- **Fan out subagents / a workflow for breadth:** multi-file or multi-location search, multi-source research, multi-dimension review, or many like items to transform — ideally with an adversarial-verify pass. This is where parallelism earns its keep.
+- **Stay serial/solo when units share state or depend on each other:** one build tree, one device node, one DB, one git working tree, one long-running process, or run-and-observe verification of a single live system — concurrent actors there corrupt, block, or contend, and "parallel verifiers" of one system just fight over it. Data-dependent steps (each needs the previous result) cannot parallelize. A small, precise edit you fully own is faster solo than briefing a subagent to re-derive the context.
+- **Heuristic:** parallelize for breadth, serialize for depth on one stateful thing. If unsure whether the units are truly independent, assume they are not and start serial — a wrong parallel decomposition costs more than it saves (rework, contention, merge conflicts, confidently-wrong fan-out).
+
 ## Memory consultation
 
-Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research. (A keyword-based auto-surfacing hook was tried briefly and rolled back — see `[Method]` memory on rollback-over-tightening — substring matching at small corpus size produced too many false positives to be net-positive.)
+Before proposing on a topic that is indexed in `MEMORY.md` for the active project, read the matching memory file first. The user has built a topic-indexed memory; using it is a one-line check, not optional research. (A keyword-based auto-surfacing hook was tried briefly and rolled back — substring matching at small corpus size produced too many false positives to be net-positive.)
+
+## Memory placement (stores are launch-dir-keyed, not topic-keyed)
+
+Claude Code keys each memory store to the launch directory, so the "active" store is frequently the wrong home for a fact. When **saving** a memory, route by SUBJECT, not cwd: durable box facts and box-general lessons (hardware, GPU/kernel/boot, desktop/KDE, shell, networking, git idioms) belong in the **box-brain store** — write the file under `~/.claude/projects/<$HOME with each '/' replaced by '-'>/memory/` (the store keyed to your home dir) and add its one-line entry to *that* `MEMORY.md`, not the active project's. Reserve a project's own store for lessons specific to that project's code or scope. Memory Roulette reviews the box-brain store.
 
 ## LSP trust
 

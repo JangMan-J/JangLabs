@@ -15,7 +15,10 @@
 # game state machine is too stateful for shell + jq to handle cleanly.
 set -Eeuo pipefail
 
-SCRIPT=$HOME/.claude/projects/-home-jangman/memory/_review_game.py
+# Derive the project key from $HOME ('/' -> '-') so a home-dir migration can't
+# strand this hook again — the pre-migration -home-jangman path is what broke.
+KEY=$(printf '%s' "$HOME" | tr '/' '-')
+SCRIPT=$HOME/.claude/projects/$KEY/memory/_review_game.py
 [ -f "$SCRIPT" ] || exit 0
 
 MARKER=/tmp/memory-review-offered-$(date +%Y%m%d)

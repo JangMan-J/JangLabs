@@ -2,6 +2,8 @@
 # Claude-Lab installer. Idempotent. Dry-run by default; pass --apply to commit.
 # What it does:
 #   1. Symlinks Claude-Lab/hooks/*.sh into ~/.claude/hooks/
+#   1b. Symlinks Claude-Lab/memory/_review_game.py into the box-brain memory
+#       store (~/.claude/projects/<$HOME key>/memory/) when that dir exists
 #   2. Appends Claude-Lab/CLAUDE.md.fragment to ~/.claude/CLAUDE.md (between sentinels; replaces if present)
 #   3. Merges the hooks block of Claude-Lab/settings.global.fragment.json into ~/.claude/settings.json
 #      - rewrites each hook command to $HOME/.claude/hooks (host-agnostic; ignores
@@ -68,6 +70,27 @@ for src in "$HOOKS_SRC"/*.sh; do
   run "ln -s '$src' '$dst'"
   run "chmod +x '$src'"
 done
+
+# ----------------- 1b. Memory Roulette engine -----------------
+# The review engine lives INSIDE the box-brain memory store and self-locates
+# MEMDIR from $HOME at runtime. Symlinked like the hooks (edit the source here,
+# no re-install). The store dir is created/managed by Claude Code, not us — we
+# only drop the symlink when it already exists.
+say "==> memory engine"
+ENGINE_SRC=$LAB_DIR/memory/_review_game.py
+PROJECT_KEY=$(printf '%s' "$HOME" | tr '/' '-')
+MEMDIR=$CLAUDE_HOME/projects/$PROJECT_KEY/memory
+ENGINE_DST=$MEMDIR/_review_game.py
+if [ ! -e "$ENGINE_SRC" ]; then
+  say "skip: $ENGINE_SRC missing"
+elif [ ! -d "$MEMDIR" ]; then
+  say "skip: box-brain store $MEMDIR does not exist yet (nothing to link into)"
+elif [ -L "$ENGINE_DST" ] && [ "$(readlink "$ENGINE_DST")" = "$ENGINE_SRC" ]; then
+  say "ok: $ENGINE_DST -> $ENGINE_SRC (already linked)"
+else
+  [ -e "$ENGINE_DST" ] && { backup "$ENGINE_DST"; run "rm -f '$ENGINE_DST'"; }
+  run "ln -s '$ENGINE_SRC' '$ENGINE_DST'"
+fi
 
 # ----------------- 2. CLAUDE.md fragment -----------------
 say "==> CLAUDE.md"

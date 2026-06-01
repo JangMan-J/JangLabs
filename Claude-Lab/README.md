@@ -54,6 +54,7 @@ Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `s
 | `hooks/memory-review-offer.sh` | UserPromptSubmit — offer a Memory Roulette round for an overdue memory, ≤1×/day |
 | `CLAUDE.md.fragment` | Appended to `~/.claude/CLAUDE.md` between sentinels |
 | `settings.global.fragment.json` | Merged into `~/.claude/settings.json` (hooks only) |
+| `memory/_review_game.py` | Memory Roulette engine; symlinked into the box-brain memory store by install.sh (self-locates its store from `$HOME`) |
 | `install.sh`, `uninstall.sh` | Idempotent dry-run-by-default |
 
 ## Iteration
