@@ -1,7 +1,7 @@
 # JoyShockMapper on Linux — port facts (JangsJyro fork)
 
-Durable, non-obvious facts learned bringing the `JangsJyro-JSM` fork
-(`github.com/JangMan-J/JangsJyro-JSM`, branch `branch-a-port`) up on a fresh
+Durable, non-obvious facts learned bringing the `jangsjyro` fork
+(`github.com/JangMan-J/jangsjyro`, branch `branch-a-port`) up on a fresh
 Arch/CachyOS + Wayland + NVIDIA box. Companion to `findings/gyro_hid.md`
 (hardware/HID) — this file is about the **software port + Linux runtime**.
 
@@ -73,7 +73,7 @@ polled by the main loop if it ever bites.
 
 ```
 # build (out-of-tree)
-cd ~/Projects/JangsJyro-JSM
+cd ~/JangLabs/jangsjyro
 cmake -S . -B build-linux -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 cmake --build build-linux -j
 # clean start (no SIGSEGV; "[AUTOLOAD] No X11 display available" prints once)

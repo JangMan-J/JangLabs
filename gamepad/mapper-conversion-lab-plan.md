@@ -39,9 +39,9 @@ wins and Phase 4's adversarial set).
   synthetic controller + a comparator stub). Re-ask before touching the device.
 - This bookmark edit is **uncommitted** by design (commit-only-when-asked); it's the resume marker.
 
-**JSM source (directed):** the user's fork **`JangsJyro-JSM`** —
-`https://github.com/JangMan-J/JangsJyro-JSM.git`, branch **`branch-a-port`**, local working copy
-`~/Projects/JangsJyro-JSM`. This is *the* JSM source for the lab (not an upstream clone). Referenced by
+**JSM source (directed):** the user's fork **`jangsjyro`** —
+`https://github.com/JangMan-J/jangsjyro.git`, branch **`branch-a-port`**, local working copy
+`~/JangLabs/jangsjyro`. This is *the* JSM source for the lab (not an upstream clone). Referenced by
 URL + SHA per the repo-root `CLAUDE.md` (no cross-repo symlink; don't copy the tree into gamepad).
 
 **Citations:** references to the preserved design read `design §<lines>`, into
@@ -121,11 +121,11 @@ reference the JSM repo by URL, don't symlink/copy wholesale).
 
 | Asset | What it gives the lab | Status |
 |---|---|---|
-| **`JangsJyro-JSM` fork** (`branch-a-port`) | The JSM source. Lineage: **Electronicks/JoyShockMapper `next`** base (→ `bb69784`) **+ ceski (@ceski-1) downstream controller-support backport** **+ JangMan integration**. SDL3 wired via CPM, **pinned `release-3.4.8`** (latest stable; gyro verified at 3.4.4 — re-confirm at 3.4.8 in Phase 6), `SDL_HIDAPI ON`; SDL is the Linux default. | **Source of record** |
+| **`jangsjyro` fork** (`branch-a-port`) | The JSM source. Lineage: **Electronicks/JoyShockMapper `next`** base (→ `bb69784`) **+ ceski (@ceski-1) downstream controller-support backport** **+ JangMan integration**. SDL3 wired via CPM, **pinned `release-3.4.8`** (latest stable; gyro verified at 3.4.4 — re-confirm at 3.4.8 in Phase 6), `SDL_HIDAPI ON`; SDL is the Linux default. | **Source of record** |
 | └ ceski backport (`b368fa5` 8BitDo, `6b7f923` Flydigi, `afbea5f` Switch 2 Pro, `437476f`/`c501407` 64-bit buttons, `44091ec` `JS_TYPE_UNKNOWN`, `2c07c5e` bus defs, `439dc1e` extra buttons, +timer/priority) | **The Ultimate 2 is now first-class:** `JS_TYPE_8BITDO_ULTIMATE2_WIRELESS`, `JS_VENDOR_8BITDO 0x2dc8`, `JS_PRODUCT…_ULTIMATE2_WIRELESS 0x6012`, mapped at `SDLWrapper.cpp:108`. **Supersedes the build-handoff's `JS_TYPE_UNKNOWN` caveat.** | De-risks gyro |
 | └ JangMan integration (`4d8927e` merge-artifact fix, `3979fed` `_guid` restore, `09b84db` SDL3-3.4.4 pin + touchpad guard) | Makes the backport compile; pins the SDL3 whose `SDL_hidapi_8bitdo` driver surfaces this pad's gyro. | Build-enabling |
-| `~/Projects/JangsJyro-JSM/docs/superpowers/` | `2026-05-03-linux-build-reproduction-handoff.md` (the build recipe), `linux-environment-setup-ubuntu.md` (deps — **Ubuntu/apt; translate to pacman**), `plans/…-jsm-linux-feasibility.md`, `specs/…-lab-design.md` (vision origin). | Reuse |
-| `~/Projects/JangsJyro-JSM/configs/ArcRaiders.{safe,experimental}.txt` | **Hand-authored JSM translation of `jyro_v13.vdf`**, same feature-ID taxonomy as the VDF audit; `OMITS` block enumerates the four gotchas. This is the **JSM (candidate) half of the A-B pair.** | Real candidate |
+| `~/JangLabs/jangsjyro/docs/superpowers/` | `2026-05-03-linux-build-reproduction-handoff.md` (the build recipe), `linux-environment-setup-ubuntu.md` (deps — **Ubuntu/apt; translate to pacman**), `plans/…-jsm-linux-feasibility.md`, `specs/…-lab-design.md` (vision origin). | Reuse |
+| `~/JangLabs/jangsjyro/configs/ArcRaiders.{safe,experimental}.txt` | **Hand-authored JSM translation of `jyro_v13.vdf`**, same feature-ID taxonomy as the VDF audit; `OMITS` block enumerates the four gotchas. This is the **JSM (candidate) half of the A-B pair.** | Real candidate |
 | `vdf/vdf_clean.py` (+28 tests) | Working Steam-Input VDF parser/cleaner — the converter's **Steam-side parser front-end**. | Reuse (fork out) |
 | `vdf/translation_audit.md` + `vdf/reference/jangman's jyro_v13.vdf` | The converter's **initial rule set (hypotheses)** + the **Steam (reference) half of the A-B pair** and end-to-end target. | Reuse / target |
 | `findings/gyro_hid.md` | Canonical gyro facts (±2000 dps, ~125 Hz actual, int16 axis map, 34-byte HID report, SDL3 driver behavior). | Canonical input |
@@ -148,7 +148,7 @@ Per `gamepad/CLAUDE.md`: the plan carries the diff; the design doc is not mutate
 | D1 | Phase 1 = JSM build; Steam observability deferred to Phase 2. | **Phase 0 front-loads Steam observability** alongside the build. | Steam Input is the irreducible black box; the build is now near-solved (D4), so the crux *is* observability. |
 | D2 | A-B proof is one of Phase 2's five items. | **A-B proof (one button, both runtimes, one delta) is the headline milestone (Phase 1)**; all horizontal infra is subordinate. | Vertical tracer-bullet first (`/tdd`); bulk infra before one delta tests imagined behavior. |
 | D3 | Schemas (Phase 3) precede a working harness. | **Schemas formalized after the loop runs** (Phases 1–2 use labeled provisional artifacts). | Don't fix contracts before the loop teaches what they must carry. |
-| D4 | Converter + build implied greenfield; "clone JSM". | **Use the `JangsJyro-JSM` fork**: source exists, builds on Linux (recipe known), the Ultimate 2 classifies, SDL3+HIDAPI is wired, and a real Steam⇄JSM **A-B config pair already exists.** | §3. The vision predates this built state. |
+| D4 | Converter + build implied greenfield; "clone JSM". | **Use the `jangsjyro` fork**: source exists, builds on Linux (recipe known), the Ultimate 2 classifies, SDL3+HIDAPI is wired, and a real Steam⇄JSM **A-B config pair already exists.** | §3. The vision predates this built state. |
 | D5 | Gyro folded into general phases. | **Gyro is its own risked lane (Phase 6)** behind an injection spike — but now de-risked: spoof the **native 8BitDo IDs** (device classifies; SDL3 driver surfaces gyro). | `uinput` can't surface SDL gyro; needs a driver-matched HID device (R2). |
 | D6 | Adversarial generator is Phase 6. | **First adversarial set (the four `vdf` gotchas) pulled to Phase 4**, right after the quick wins. | I hold the hypotheses + the `OMITS` config; highest-value behavioral questions; where "green = classify" is proven. |
 | D7 | Run artifacts under `docs/superpowers/runs/…`. | **`runs/` and `kb/` at the gamepad root.** | `docs/superpowers/` is the fork's retired Kiro experiment (confirmed — vision was authored there). |
@@ -286,7 +286,7 @@ map, not a work order.
 To the readiness contract (`design §62–85`).
 
 - **Owner role:** Validator agent.
-- **Inputs:** this plan; `~/Projects/JangsJyro-JSM` @ `branch-a-port`; that fork's
+- **Inputs:** this plan; `~/JangLabs/jangsjyro` @ `branch-a-port`; that fork's
   `docs/superpowers/2026-05-03-linux-build-reproduction-handoff.md` and `linux-environment-setup-ubuntu.md`;
   `findings/gyro_hid.md`; the per-turn system fingerprint.
 - **Outputs (provisional, labeled):** under `runs/<UTC-timestamp>-phase0-oracle-feasibility/`:
@@ -310,7 +310,7 @@ To the readiness contract (`design §62–85`).
   # deps (translate the fork's Ubuntu/apt notes → Arch; hidapi is the known gap)
   sudo pacman -S --needed hidapi   # plus: verify gtkmm3, libayatana-appindicator, libevdev, libusb, sdl deps
   # build the fork — clang for BOTH C and C++ (avoids the gcc-16 + SDL3 Wayland ICE); clean tree
-  JSM=~/Projects/JangsJyro-JSM
+  JSM=~/JangLabs/jangsjyro
   cmake -S "$JSM" -B "$JSM/build-linux" -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
   cmake --build "$JSM/build-linux" -j
@@ -357,8 +357,9 @@ To the readiness contract (`design §62–85`).
 ## 13. Repo layout & where things go
 
 New top-level dirs this plan introduces: `runs/` (per-run artifacts), `kb/` (`canonical/` + `lab-notes/`).
-JSM is **not** vendored here — it lives in the sibling repo `~/Projects/JangsJyro-JSM` and is referenced
-by URL + SHA (the repo-root `CLAUDE.md`: no cross-repo symlinks). Existing routing (`gamepad/CLAUDE.md`)
+JSM is **not** vendored here — it's the **`jangsjyro` git submodule** of JangLabs (its own history +
+remote, pinned by URL + SHA; the repo-root `CLAUDE.md`: no cross-repo symlinks). Local checkout:
+`~/JangLabs/jangsjyro`. Existing routing (`gamepad/CLAUDE.md`)
 unchanged: durable facts → `findings/`; raw artifacts → `reference/<topic>/`; diagnostic scripts →
 `tools/` + a line in `tools/README.md`. **`vdf/` is forked *out of*, never expanded in place.**
 **`vision/` is never mutated.**
@@ -367,8 +368,8 @@ unchanged: durable facts → `findings/`; raw artifacts → `reference/<topic>/`
 
 ## 14. Cross-references
 
-- JSM source: `https://github.com/JangMan-J/JangsJyro-JSM.git` @ `branch-a-port` (local
-  `~/Projects/JangsJyro-JSM`). Lineage: Electronicks/JoyShockMapper + ceski (@ceski-1) + JangMan.
+- JSM source: `https://github.com/JangMan-J/jangsjyro.git` @ `branch-a-port` (local
+  `~/JangLabs/jangsjyro`). Lineage: Electronicks/JoyShockMapper + ceski (@ceski-1) + JangMan.
 - Build recipe + runtime notes: that fork's `docs/superpowers/2026-05-03-linux-build-reproduction-handoff.md`,
   `linux-environment-setup-ubuntu.md`, `plans/2026-04-29-jsm-linux-feasibility.md`.
 - A-B pair: `vdf/reference/jangman's jyro_v13.vdf` (Steam) ⇄ fork `configs/ArcRaiders.{safe,experimental}.txt` (JSM).

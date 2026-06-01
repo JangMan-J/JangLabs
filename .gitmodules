@@ -1,0 +1,4 @@
+[submodule "jangsjyro"]
+	path = jangsjyro
+	url = https://github.com/JangMan-J/jangsjyro.git
+	branch = branch-a-port

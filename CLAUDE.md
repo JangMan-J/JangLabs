@@ -21,5 +21,6 @@ This repo is a multi-lab workspace for AI-assisted experimentation. Each top-lev
 - `agent/` — multi-agent coordination skills (e.g. ACP / Agent-Teams arbiter).
 - `claude/` — Claude Code harness (hooks, CLAUDE.md fragment, settings); installed globally via `install.sh`.
 - `gamepad/` — Steam Input / gyro / controller-mapping investigations and tooling.
+- `jangsjyro/` — **git submodule** (own repo + GitHub remote): the JangsJyro JoyShockMapper fork — the JSM source-of-record for the `gamepad/` lab, pinned by commit SHA. It is *not* vendored into JangLabs history; update with `git submodule update --remote`, and commit inside it (not from JangLabs).
 - `proton/` — ProtonDB-driven Linux/Proton config inference (`protondb-tuner` skill).
 - `theme/` — data-first theme / color-role mapping across KDE, Kvantum, Kitty, and Warp.

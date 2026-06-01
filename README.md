@@ -9,6 +9,7 @@ Personal workspace for AI-assisted (Claude Code) experiments, investigations, an
 | [`agent/`](./agent) | Multi-agent coordination skills and ACP / Agent-Teams arbiter prompts. |
 | [`claude/`](./claude) | Claude Code harness — hooks, CLAUDE.md fragment, settings; installed globally via `install.sh`. |
 | [`gamepad/`](./gamepad) | 8BitDo Ultimate 2 Wireless. Linux-side input-latency / gyro troubleshooting. Preserved long-term direction in `vision/`: a Steam-Input-vs-JSM behavioral comparison lab. |
+| [`jangsjyro/`](./jangsjyro) | **Git submodule** (independent repo + remote, [JangMan-J/jangsjyro](https://github.com/JangMan-J/jangsjyro)): the JangsJyro JoyShockMapper fork — JSM source for the `gamepad/` lab, pinned by commit SHA. |
 | [`proton/`](./proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
 | [`theme/`](./theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
 
