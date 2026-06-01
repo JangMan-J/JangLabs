@@ -1,6 +1,6 @@
-# Jangs-Lab dev container
+# JangLabs dev container
 
-A reproducible, throwaway dev environment for the Jangs-Lab monorepo. The
+A reproducible, throwaway dev environment for the JangLabs monorepo. The
 toolchain (Python 3.12, `uv`, `ruff`, `shellcheck`, `gh`, Node LTS) lives
 *inside* the container; the repo is bind-mounted in, so your edits persist on
 the host but package/build pollution does not. `podman rm` the container and the
@@ -49,7 +49,7 @@ Install the **Dev Containers** extension, set `dev.containers.dockerPath` to
 The image ships Python + `uv`; per-lab deps stay scoped to each lab:
 
 ```sh
-cd Theme-Lab && uv venv && uv pip install -r requirements.txt
+cd theme && uv venv && uv pip install -r requirements.txt
 ```
 
 ## Notes
@@ -57,7 +57,7 @@ cd Theme-Lab && uv venv && uv pip install -r requirements.txt
 - **`--userns=keep-id`** (in `devcontainer.json` `runArgs`) maps your host UID
   (1000) to the container's `vscode` user so workspace files you create stay
   owned by you, not root. If you ever switch to Docker, drop that arg.
-- The workspace mounts at `/workspaces/Jangs-Lab` inside the container.
+- The workspace mounts at `/workspaces/JangLabs` inside the container.
 - `devcontainer.json` is kept as **strict JSON, no comments** — the host's
   `syntax-check-touched.sh` hook validates `.json` with `jq`, which rejects
   JSONC. Rationale for each field lives here instead.
