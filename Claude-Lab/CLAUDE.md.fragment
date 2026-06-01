@@ -35,6 +35,8 @@ Before proposing on a topic that is indexed in `MEMORY.md` for the active projec
 
 Claude Code keys each memory store to the launch directory, so the "active" store is frequently the wrong home for a fact. When **saving** a memory, route by SUBJECT, not cwd: durable box facts and box-general lessons (hardware, GPU/kernel/boot, desktop/KDE, shell, networking, git idioms) belong in the **box-brain store** — write the file under `~/.claude/projects/<$HOME with each '/' replaced by '-'>/memory/` (the store keyed to your home dir) and add its one-line entry to *that* `MEMORY.md`, not the active project's. Reserve a project's own store for lessons specific to that project's code or scope. Memory Roulette reviews the box-brain store.
 
+**Tag every box-brain memory you save.** Add a `tags:` line nested under `metadata:`, drawn ONLY from the vocabulary in that store's `_tags.md` (one or two domain tags, any central tool, plus — for `[Method]`/`[Fumble]` entries — a method-pattern; ≤8 total). If nothing in `_tags.md` fits, add the new tag to `_tags.md` first — never coin an ad-hoc tag inline.
+
 ## LSP trust
 
 For type-checked languages (Python, C/C++, TypeScript, Rust), the relevant LSP plugin is loaded and reports diagnostics in tool results. Trust those signals — do not re-derive type errors, missing imports, or symbol resolution that the LSP already surfaced.

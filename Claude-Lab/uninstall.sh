@@ -2,7 +2,7 @@
 # Claude-Lab uninstaller. Dry-run by default; pass --apply to commit.
 # Reverses install.sh:
 #   1. Removes ~/.claude/hooks/<name>.sh symlinks that point into Claude-Lab/
-#   1b. Removes the _review_game.py symlink from the box-brain memory store
+#   1b. Removes the Claude-Lab/memory/* symlinks from the box-brain memory store
 #   2. Removes the CLAUDE.md fragment between sentinel comments
 #   3. Removes our hook entries from settings.json (matched by command path)
 # Symmetric with install.sh: removes exactly what it adds (hooks, the CLAUDE.md
@@ -53,16 +53,19 @@ for src in "$HOOKS_SRC"/*.sh; do
   fi
 done
 
-# 1b. memory engine symlink
-say "==> memory engine"
-ENGINE_SRC=$LAB_DIR/memory/_review_game.py
+# 1b. memory store asset symlinks (engine + tag vocab)
+say "==> memory store assets"
 PROJECT_KEY=$(printf '%s' "$HOME" | tr '/' '-')
-ENGINE_DST=$CLAUDE_HOME/projects/$PROJECT_KEY/memory/_review_game.py
-if [ -L "$ENGINE_DST" ] && [ "$(readlink "$ENGINE_DST")" = "$ENGINE_SRC" ]; then
-  run "rm '$ENGINE_DST'"
-else
-  say "skip: $ENGINE_DST is not a symlink to our source"
-fi
+MEMDIR=$CLAUDE_HOME/projects/$PROJECT_KEY/memory
+for src in "$LAB_DIR"/memory/*; do
+  [ -e "$src" ] || continue
+  dst=$MEMDIR/$(basename "$src")
+  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+    run "rm '$dst'"
+  else
+    say "skip: $dst is not a symlink to our source"
+  fi
+done
 
 # 2. CLAUDE.md fragment
 say "==> CLAUDE.md"
