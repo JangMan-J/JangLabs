@@ -83,3 +83,29 @@ build-linux/JoyShockMapper/JoyShockMapper & sleep 3; kill -TERM %1; wait
 ```
 Backtrace artifacts for the two 2026-05-31 fixes live in
 `runs/20260531T135337Z-phase0-oracle-feasibility/`.
+
+## Updated 2026-06-01 — Phase 0a runtime smoke PASSED (real pad → evdev)
+
+The build run proved JSM *starts/stops*; this proves it *works*. Real 8BitDo Ultimate 2 in D-Input mode
+(`2dc8:6012`, evdev `event24`), `S = SPACE` / `ZR = LMOUSE`, mappings fed via the command FIFO
+**`/tmp/jsm_command_fifo`** (Linux JSM **ignores `argv`** — `main.cpp:2860`). Captured with
+`tools/evdev_capture.py`. Run: `runs/20260601T065426Z-phase0-runtime-smoke/`.
+
+- **Output is real libevdev/uinput, confirmed at runtime** — JSM creates `JoyShockMapper_KEYBOARD` and
+  `JoyShockMapper_MOUSE` (`InputHelpers.cpp`, `libevdev_uinput_write_event`). So keyboard/mouse output
+  is **compositor-agnostic** and works on Wayland (unlike the X11 window-detection path above). South →
+  `KEY_SPACE` and right-trigger → `BTN_LEFT`, exact count + order; unmapped stick-clicks emitted nothing
+  (negative control).
+- **Digital translation latency ~1–3 ms** (pad `BTN_A` → JSM `KEY_SPACE`).
+- **`ZR` fires off the analog trigger threshold** (`ABS_RZ`/`ABS_GAS` ramp), **not** the pad's digital
+  `BTN_TR2` latch — on a fast squeeze JSM's `BTN_LEFT` precedes `BTN_TR2` by ~13–16 ms. For the
+  converter: trigger-as-button equivalence is governed by JSM's threshold; the reference signal for
+  trigger traces is the analog axis, not the controller's internal digital button.
+- Headless run tips: stdout is **block-buffered** when redirected — run under `stdbuf -oL` to read the
+  banner/acks live; the `fopen /dev/tty` stderr line is just the detached console forwarder (harmless;
+  FIFO is the command channel).
+
+**Contrast — the Steam Input lane does NOT land at evdev.** Phase 0b found Steam Input's kbd/mouse
+output is observable at the **XI2 / Wayland-seat** plane (not evdev); the injection *mechanism* (X11
+XTEST vs libei) is **undetermined**. So the lab's two oracle lanes are observed on **different planes**:
+JSM = evdev (this file), Steam Input = XI2 / Wayland seat. See `findings/steam_input_linux.md`.

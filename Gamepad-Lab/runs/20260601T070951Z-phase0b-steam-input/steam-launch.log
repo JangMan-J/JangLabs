@@ -1,0 +1,7 @@
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.
+ERROR: ld.so: object '/usr/lib32/libextest.so' from LD_PRELOAD cannot be preloaded (wrong ELF class: ELFCLASS32): ignored.

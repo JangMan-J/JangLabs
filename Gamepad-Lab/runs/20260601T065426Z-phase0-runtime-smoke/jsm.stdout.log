@@ -1,0 +1,120 @@
+[1;32mWelcome to JoyShockMapper version v[1;32mWelcome to JoyShockMapper version v-128-NOTFOUND.-128-NOTFOUND.-128-NOTFOUND!
+[0;37m[FIFO] Opened FIFO for reading (fd=16)
+[FIFO] Dummy writer opened (fd=17)
+[1;34m[AUTOCONNECT] Going from 0 devices to 1.
+[0;37m[0;32mAUTOLOAD is available. Files in [0;37m[1;34m/home/jangmanj/.config/JoyShockMapper/AutoLoad/[0;37m[0;32m folder will get loaded automatically when a matching application is in focus.
+[0;37m[0;32m1 device connected
+[0;37m[0;32mResetting all mappings to defaults
+[0;37m[0;32mThere is no [0;37m[1;34mOnReset.txt[0;37m[0;32m file to load.
+[0;37m[0;32mThere is no [0;37m[1;34mOnStartup.txt[0;37m[0;32m file to load.
+[0;37m[0;32mReconnecting controllers: MERGE
+[0;37m[0;32m1 device connected
+[0;37m[0;32mThere is no [0;37m[1;34mOnReconnect.txt[0;37m[0;32m file to load.
+[0;37mRESET_MAPPINGS
+S = SPACE
+ZR = LMOUSE
+[0;32mResetting all mappings to defaults
+[0;37m[0;32mThere is no [0;37m[1;34mOnReset.txt[0;37m[0;32m file to load.
+[0;37m[0;32mS mapped to SPACE
+[0;37m[0;32mZR mapped to LMOUSE
+[0;37m[0;32mMUP: true
+[0;37m[0;32mMUP: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mL3: true
+[0;37m[0;32mL3: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mL3: true
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mL3: false
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mLEAN_LEFT: true
+[0;37m[0;32mLEAN_LEFT: false
+[0;37m[0;32mRLEFT: true
+[0;37m[0;32mRUP: true
+[0;37m[0;32mRLEFT: false
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mRUP: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mLEAN_LEFT: true
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMRING: true
+[0;37m[0;32mMRING: false
+[0;37m[0;32mLLEFT: true
+[0;37m[0;32mMRING: true
+[0;37m[0;32mLLEFT: false
+[0;37m[0;32mMRING: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mLEAN_LEFT: false
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mS: true
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mS: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mZR: true
+[0;37m[0;32mR3: true
+[0;37m[0;32mR3: false
+[0;37m[0;32mZR: false
+[0;37m[0;32mMRING: true
+[0;37m[0;32mMRING: false
+[0;37m[0;32mZR: true
+[0;37m[0;32mR3: true
+[0;37m[0;32mR3: false
+[0;37m[0;32mZR: false
+[0;37m[0;32mS: true
+[0;37m[0;32mS: false
+[0;37m[0;32mZR: true
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mZR: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mS: true
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMDOWN: true
+[0;37m[0;32mS: false
+[0;37m[0;32mZR: true
+[0;37m[0;32mZR: false
+[0;37m[0;32mMLEFT: true
+[0;37m[0;32mMLEFT: false
+[0;37m[0;32mMDOWN: false
+[0;37m[0;32mMRIGHT: true
+[0;37m[0;32mLEAN_RIGHT: true
+[0;37m[0;32mMUP: true
+[0;37m[0;32mLEAN_RIGHT: false
+[0;37m[0;32mMRIGHT: false
+[0;37m[0;32mMUP: false
+[0;37m

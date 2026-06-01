@@ -1,0 +1,3 @@
+# Transient per-run process-id files written by the lab harness (tools/*.py, run scripts).
+# Run artifacts (result.md, *.jsonl, *.txt, *.log captures) ARE tracked as evidence.
+*.pid

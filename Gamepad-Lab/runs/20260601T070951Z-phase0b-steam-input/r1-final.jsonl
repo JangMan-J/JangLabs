@@ -1,0 +1,78 @@
+{"t": 1780299773.173343, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 1}
+{"t": 1780299773.173343, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299775.114677, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 0}
+{"t": 1780299775.114677, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299779.978877, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299780.119794, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299780.940798, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299781.116802, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299781.950809, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299782.09281, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299782.969824, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299783.135828, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299783.892848, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299784.039841, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299815.79025, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299815.947255, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299816.842261, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299817.048269, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299818.034282, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299818.249282, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299818.935292, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299819.115289, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299819.944307, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299820.156311, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299821.029399, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 1}
+{"t": 1780299821.221338, "dev": "8BitDo 8BitDo Ultimate 2 Wireless Controller for PC", "type": "KEY", "code": "BTN_B", "value": 0}
+{"t": 1780299822.042316, "dev": "Razer Razer Basilisk V3 Pro", "type": "KEY", "code": "BTN_LEFT", "value": 1}
+{"t": 1780299822.154315, "dev": "Razer Razer Basilisk V3 Pro", "type": "KEY", "code": "BTN_LEFT", "value": 0}
+{"t": 1780299822.558652, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 1}
+{"t": 1780299822.558652, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299822.732652, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299822.732652, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 1}
+{"t": 1780299822.871377, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_S", "value": 1}
+{"t": 1780299823.059667, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 0}
+{"t": 1780299823.059667, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_TRIPLETAP", "value": 1}
+{"t": 1780299823.064407, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_O", "value": 1}
+{"t": 1780299823.070398, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_S", "value": 0}
+{"t": 1780299823.092678, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 1}
+{"t": 1780299823.092678, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_TRIPLETAP", "value": 0}
+{"t": 1780299823.162377, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_N", "value": 1}
+{"t": 1780299823.233374, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_O", "value": 0}
+{"t": 1780299823.250032, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299823.250032, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 0}
+{"t": 1780299823.264394, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_W", "value": 1}
+{"t": 1780299823.292393, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_N", "value": 0}
+{"t": 1780299823.384403, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_W", "value": 0}
+{"t": 1780299823.410393, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_ENTER", "value": 1}
+{"t": 1780299823.469433, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 0}
+{"t": 1780299823.469433, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299823.502378, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_ENTER", "value": 0}
+{"t": 1780299823.929171, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 1}
+{"t": 1780299823.929171, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299824.148574, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299824.148574, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 1}
+{"t": 1780299824.240435, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_D", "value": 1}
+{"t": 1780299824.363388, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_D", "value": 0}
+{"t": 1780299824.421405, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_O", "value": 1}
+{"t": 1780299824.476445, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_N", "value": 1}
+{"t": 1780299824.554518, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_O", "value": 0}
+{"t": 1780299824.575127, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299824.575127, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 0}
+{"t": 1780299824.583492, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299824.583492, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 1}
+{"t": 1780299824.606479, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_E", "value": 1}
+{"t": 1780299824.611477, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_N", "value": 0}
+{"t": 1780299824.620801, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299824.620801, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_DOUBLETAP", "value": 0}
+{"t": 1780299824.673432, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_E", "value": 0}
+{"t": 1780299824.691166, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 0}
+{"t": 1780299824.691166, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299824.740879, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 1}
+{"t": 1780299824.740879, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 1}
+{"t": 1780299825.007441, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_ENTER", "value": 1}
+{"t": 1780299825.123436, "dev": "ASUSTek Computer Inc. N-KEY Device", "type": "KEY", "code": "KEY_ENTER", "value": 0}
+{"t": 1780299825.163139, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOUCH", "value": 0}
+{"t": 1780299825.163139, "dev": "ASUF1205:00 2808:0106 Touchpad", "type": "KEY", "code": "BTN_TOOL_FINGER", "value": 0}
+{"t": 1780299843.41967, "dev": "Razer Razer Basilisk V3 Pro", "type": "KEY", "code": "BTN_LEFT", "value": 1}
+{"t": 1780299843.514593, "dev": "Razer Razer Basilisk V3 Pro", "type": "KEY", "code": "BTN_LEFT", "value": 0}
