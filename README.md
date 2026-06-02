@@ -19,16 +19,17 @@ git submodule update --init --recursive
 
 ## Labs
 
-Submodule paths are lowercase; their repos are PascalCase (`agent` → `Agent`).
+Submodule paths are lowercase; their repos are that path PascalCased with a `JangLabs-`
+prefix (`agent` → `JangLabs-Agent`).
 
 | Lab | Repository | Focus |
 |-----|------------|-------|
-| [`agent/`](./agent) | [`Agent`](https://github.com/JangMan-J/Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
-| [`claude/`](./claude) | [`Claude`](https://github.com/JangMan-J/Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
-| [`gamepad/`](./gamepad) | [`Gamepad`](https://github.com/JangMan-J/Gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
-| [`jangsjyro/`](./jangsjyro) | [`JangsJyro`](https://github.com/JangMan-J/JangsJyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
-| [`proton/`](./proton) | [`Proton`](https://github.com/JangMan-J/Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
-| [`theme/`](./theme) | [`Theme`](https://github.com/JangMan-J/Theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
+| [`agent/`](./agent) | [`JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
+| [`claude/`](./claude) | [`JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
+| [`gamepad/`](./gamepad) | [`JangLabs-Gamepad`](https://github.com/JangMan-J/JangLabs-Gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
+| [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
+| [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
+| [`theme/`](./theme) | [`JangLabs-Theme`](https://github.com/JangMan-J/JangLabs-Theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
 
 Plus **`build/`** at the root — a git-ignored directory that collects compiled
 lab-tool output (the sole non-submodule directory; see [`CLAUDE.md`](./CLAUDE.md)).

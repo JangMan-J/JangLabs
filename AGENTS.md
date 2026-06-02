@@ -15,7 +15,7 @@ as a git submodule.
 **Every top-level directory not beginning with `.` is a git submodule (one exception:
 `build/`), and nothing else lives at the workspace root.** Only these may sit at the root:
 
-1. Submodules (the labs). Submodule path is lowercase; its repo is PascalCase (`agent` → `Agent`).
+1. Submodules (the labs). Submodule path is lowercase; its repo is that path PascalCased with a `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 2. Dot-files / dot-dirs (`.git`, `.gitmodules`, `.gitignore`, `.devcontainer/`, `.claude-workspace`).
 3. Root coordinator files (`CLAUDE.md`, `README.md`, `AGENTS.md`).
 4. `build/` — the one sanctioned non-submodule dir: git-ignored compiled output from lab tools (only its README is tracked).

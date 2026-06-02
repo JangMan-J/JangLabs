@@ -1,24 +1,24 @@
 [submodule "jangsjyro"]
 	path = jangsjyro
-	url = https://github.com/JangMan-J/JangsJyro.git
+	url = https://github.com/JangMan-J/JangLabs-JangsJyro.git
 	branch = branch-a-port
 [submodule "agent"]
 	path = agent
-	url = https://github.com/JangMan-J/Agent.git
+	url = https://github.com/JangMan-J/JangLabs-Agent.git
 	branch = main
 [submodule "claude"]
 	path = claude
-	url = https://github.com/JangMan-J/Claude.git
+	url = https://github.com/JangMan-J/JangLabs-Claude.git
 	branch = main
 [submodule "gamepad"]
 	path = gamepad
-	url = https://github.com/JangMan-J/Gamepad.git
+	url = https://github.com/JangMan-J/JangLabs-Gamepad.git
 	branch = main
 [submodule "proton"]
 	path = proton
-	url = https://github.com/JangMan-J/Proton.git
+	url = https://github.com/JangMan-J/JangLabs-Proton.git
 	branch = main
 [submodule "theme"]
 	path = theme
-	url = https://github.com/JangMan-J/Theme.git
+	url = https://github.com/JangMan-J/JangLabs-Theme.git
 	branch = main

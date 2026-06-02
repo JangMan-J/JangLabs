@@ -48,22 +48,24 @@ cloneable per lab, and free of cross-lab contamination.
 ## Structure — the labs
 
 All six lab directories are submodules (`git submodule status` to see pinned SHAs).
-**Naming:** the submodule path is lowercase, its repo is PascalCase (`agent` → `Agent`).
+**Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
+`JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
 | Lab (submodule) | Repository | Branch | Focus | Entry doc |
 |---|---|---|---|---|
-| `agent/` | [`JangMan-J/Agent`](https://github.com/JangMan-J/Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
-| `claude/` | [`JangMan-J/Claude`](https://github.com/JangMan-J/Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. | `claude/CLAUDE.md` |
-| `gamepad/` | [`JangMan-J/Gamepad`](https://github.com/JangMan-J/Gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
-| `jangsjyro/` | [`JangMan-J/JangsJyro`](https://github.com/JangMan-J/JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
-| `proton/` | [`JangMan-J/Proton`](https://github.com/JangMan-J/Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
-| `theme/` | [`JangMan-J/Theme`](https://github.com/JangMan-J/Theme) | `main` | Data-first terminal→desktop color-role mapping (KDE, Kvantum, Kitty, Warp). | `theme/HANDOFF.md` |
+| `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
+| `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. | `claude/CLAUDE.md` |
+| `gamepad/` | [`JangMan-J/JangLabs-Gamepad`](https://github.com/JangMan-J/JangLabs-Gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
+| `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
+| `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
+| `theme/` | [`JangMan-J/JangLabs-Theme`](https://github.com/JangMan-J/JangLabs-Theme) | `main` | Data-first terminal→desktop color-role mapping (KDE, Kvantum, Kitty, Warp). | `theme/HANDOFF.md` |
 
-`jangsjyro` is the model the others now follow: an independent repo, pinned by SHA,
-never vendored into JangLabs history (its repo keeps its established `JangsJyro` name).
-The five lab repos (`Agent`/`Claude`/`Gamepad`/`Proton`/`Theme`) were fresh-init
-extractions of formerly in-tree labs (their pre-extraction history lives in JangLabs'
-own git log).
+`jangsjyro` is the structural model the others now follow: an independent repo, pinned
+by SHA, never vendored into JangLabs history (it was the one lab already independent
+before the others were extracted). The five others (`JangLabs-Agent`/`JangLabs-Claude`/
+`JangLabs-Gamepad`/`JangLabs-Proton`/`JangLabs-Theme`) were fresh-init extractions of
+formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
+six repos now share the `JangLabs-` name prefix (its repo is `JangLabs-JangsJyro`).
 
 ---
 
@@ -93,7 +95,7 @@ the authority — see *Lab scoping*.
 
 ### Adding a lab
 
-1. Create the lab as its **own** git repo (PascalCase name; submodule `foo` → repo `Foo`),
+1. Create the lab as its **own** git repo (submodule `foo` → repo `JangLabs-Foo`),
    push it to a remote.
 2. `git submodule add -b <branch> <url> <name>` at the JangLabs root (path stays lowercase).
 3. `git commit`. Add a row to the table above and to `README.md`.
