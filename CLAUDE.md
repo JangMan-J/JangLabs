@@ -54,7 +54,7 @@ All six lab directories are submodules (`git submodule status` to see pinned SHA
 | Lab (submodule) | Repository | Branch | Focus | Entry doc |
 |---|---|---|---|---|
 | `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
-| `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. | `claude/CLAUDE.md` |
+| `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `claude/CLAUDE.md` |
 | `gamepad/` | [`JangMan-J/JangLabs-Gamepad`](https://github.com/JangMan-J/JangLabs-Gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
@@ -135,8 +135,8 @@ lab and, **the moment the active lab changes**, injects a one-paragraph scope ba
 its entry doc. It is silent off-workspace and when the lab is unchanged, so it costs
 nothing until you actually re-scope.
 
-- **Enable it:** from `claude/`, run `./install.sh --apply`, then restart Claude Code
-  (or `/reload-plugins`). It registers alongside the other harness hooks.
+- **Enable it:** from `claude/`, run `./agent-harness.py install --apply`, then restart
+  Claude Code (or `/reload-plugins`). It registers alongside the other harness hooks.
 - **The marker** (`.claude-workspace`) is what flags this tree as a multi-lab workspace.
   Keep it at the root. The mechanism is generic — any future workspace that drops the
   same marker gets the same scoping behavior.

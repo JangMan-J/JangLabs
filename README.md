@@ -25,7 +25,7 @@ prefix (`agent` → `JangLabs-Agent`).
 | Lab | Repository | Focus |
 |-----|------------|-------|
 | [`agent/`](./agent) | [`JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
-| [`claude/`](./claude) | [`JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
+| [`claude/`](./claude) | [`JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. |
 | [`gamepad/`](./gamepad) | [`JangLabs-Gamepad`](https://github.com/JangMan-J/JangLabs-Gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
