@@ -23,7 +23,7 @@ There are exactly four kinds of entry allowed at the root of JangLabs:
    These describe the workspace; they do not implement any lab.
 4. **`build/`** — the single sanctioned exception: a non-submodule output directory
    where compiled binaries/artifacts from the labs' tools are collected (namespaced
-   per lab, e.g. `build/gamepad/`). Its contents are git-ignored — only
+   per lab, e.g. `build/jangsjyro/`). Its contents are git-ignored — only
    `build/README.md` is tracked. This is the *only* non-submodule, non-dot directory
    permitted at the root; do not add others.
 
@@ -36,9 +36,9 @@ There are exactly four kinds of entry allowed at the root of JangLabs:
 - **Never** add a loose file at the root other than the three coordinators above.
 - To bring **new** work into the workspace, it must become **its own repo + submodule**
   — see *Adding a lab*. Do not "just drop it in" as a folder.
-- A lab is referenced from another lab **by path** (e.g. `gamepad/` reads
-  `../jangsjyro`), never by copying/vendoring its files into the root or into another
-  lab. (Honors the repo rule: no absolute-path symlinks; reference by path or URL.)
+- A lab is referenced from another lab **by path** (e.g. `../<sibling-lab>`), never by
+  copying/vendoring its files into the root or into another lab. (Honors the repo rule:
+  no absolute-path symlinks; reference by path or URL.)
 
 This invariant is what makes the workspace cleanly separable, independently
 cloneable per lab, and free of cross-lab contamination.
@@ -47,7 +47,7 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All six lab directories are submodules (`git submodule status` to see pinned SHAs).
+All five lab directories are submodules (`git submodule status` to see pinned SHAs).
 **Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
 `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
@@ -55,17 +55,18 @@ All six lab directories are submodules (`git submodule status` to see pinned SHA
 |---|---|---|---|---|
 | `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
 | `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `claude/CLAUDE.md` |
-| `gamepad/` | [`JangMan-J/JangLabs-Gamepad`](https://github.com/JangMan-J/JangLabs-Gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
-| `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
+| `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
 | `theme/` | [`JangMan-J/JangLabs-Theme`](https://github.com/JangMan-J/JangLabs-Theme) | `main` | Data-first terminal→desktop color-role mapping (KDE, Kvantum, Kitty, Warp). | `theme/HANDOFF.md` |
 
 `jangsjyro` is the structural model the others now follow: an independent repo, pinned
 by SHA, never vendored into JangLabs history (it was the one lab already independent
-before the others were extracted). The five others (`JangLabs-Agent`/`JangLabs-Claude`/
-`JangLabs-Gamepad`/`JangLabs-Proton`/`JangLabs-Theme`) were fresh-init extractions of
+before the others were extracted). The four others (`JangLabs-Agent`/`JangLabs-Claude`/
+`JangLabs-Proton`/`JangLabs-Theme`) were fresh-init extractions of
 formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
-six repos now share the `JangLabs-` name prefix (its repo is `JangLabs-JangsJyro`).
+five repos now share the `JangLabs-` name prefix (its repo is `JangLabs-JangsJyro`). (A
+sixth, `JangLabs-Gamepad`, was likewise extracted but has since been folded into
+`jangsjyro/gamepad/` and its submodule retired — its history remains in JangLabs' git log.)
 
 ---
 
@@ -89,10 +90,6 @@ the authority — see *Lab scoping*.
 - **Pull a lab's latest:** `git submodule update --remote <lab>` advances it to the tip
   of its tracked branch (`main`, or `branch-a-port` for `jangsjyro`); then bump the
   pointer as above.
-- **`gamepad` ↔ `jangsjyro` coupling:** `gamepad/` reads the JSM source at
-  `../jangsjyro` (read-only, never vendored). That path only resolves inside a full
-  JangLabs checkout, so do gamepad work here, not in a standalone `Gamepad` clone.
-
 ### Adding a lab
 
 1. Create the lab as its **own** git repo (submodule `foo` → repo `JangLabs-Foo`),
@@ -118,8 +115,8 @@ and an automation, so re-scoping is intuitive as you move between subdirectories
 - **On entering a lab, read its entry doc first** (precedence:
   `CLAUDE.md` → `AGENTS.md` → `README.md` → `HANDOFF.md`). Every lab `CLAUDE.md` opens
   with a "Lab scope" banner restating this.
-- **Don't cross lab boundaries.** Conventions in one lab (e.g. `gamepad/`'s real-runtime
-  evidence rule) do not apply to another (e.g. `agent/`'s skill-prompt contract). Don't
+- **Don't cross lab boundaries.** Conventions in one lab (e.g. `jangsjyro/`'s upstream-facing-diff
+  discipline) do not apply to another (e.g. `agent/`'s skill-prompt contract). Don't
   edit or import a sibling lab from inside one — reference it by path/URL if needed.
 - **Resumable handoffs are sacred.** Where a lab has `handoffs/` or a `HANDOFF.md`, each
   is meant to let a fresh session pick up cold. Don't edit them casually.
