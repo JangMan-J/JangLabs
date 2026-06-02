@@ -1,29 +1,52 @@
 # JangLabs
 
-Personal workspace for AI-assisted (Claude Code) experiments, investigations, and tooling. Each subdirectory is an independent "lab" with its own focus.
+Personal workspace for AI-assisted (Claude Code) experiments, investigations, and
+tooling. It is a **monorepo of submodules**: a thin coordinator whose every top-level
+directory is an independent project ("lab") living in its own git repository.
+
+> **Workspace rule:** every top-level directory not beginning with `.` is a git
+> submodule, and nothing else lives at the root. See [`CLAUDE.md`](./CLAUDE.md) and
+> [`AGENTS.md`](./AGENTS.md) for the full policy and the conventions agents follow.
+
+## Clone
+
+```bash
+git clone --recurse-submodules https://github.com/JangMan-J/JangLabs.git
+# already cloned without submodules?
+git submodule update --init --recursive
+```
 
 ## Labs
 
-| Lab | Focus |
-|-----|-------|
-| [`agent/`](./agent) | Multi-agent coordination skills and ACP / Agent-Teams arbiter prompts. |
-| [`claude/`](./claude) | Claude Code harness — hooks, CLAUDE.md fragment, settings; installed globally via `install.sh`. |
-| [`gamepad/`](./gamepad) | 8BitDo Ultimate 2 Wireless. Linux-side input-latency / gyro troubleshooting. Preserved long-term direction in `vision/`: a Steam-Input-vs-JSM behavioral comparison lab. |
-| [`jangsjyro/`](./jangsjyro) | **Git submodule** (independent repo + remote, [JangMan-J/jangsjyro](https://github.com/JangMan-J/jangsjyro)): the JangsJyro JoyShockMapper fork — JSM source for the `gamepad/` lab, pinned by commit SHA. |
-| [`proton/`](./proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
-| [`theme/`](./theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
+| Lab | Repository | Focus |
+|-----|------------|-------|
+| [`agent/`](./agent) | [`JangLabs-agent`](https://github.com/JangMan-J/JangLabs-agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
+| [`claude/`](./claude) | [`JangLabs-claude`](https://github.com/JangMan-J/JangLabs-claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
+| [`gamepad/`](./gamepad) | [`JangLabs-gamepad`](https://github.com/JangMan-J/JangLabs-gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
+| [`jangsjyro/`](./jangsjyro) | [`jangsjyro`](https://github.com/JangMan-J/jangsjyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
+| [`proton/`](./proton) | [`JangLabs-proton`](https://github.com/JangMan-J/JangLabs-proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
+| [`theme/`](./theme) | [`JangLabs-theme`](https://github.com/JangMan-J/JangLabs-theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
 
 ## Working with this repo
 
-This is an agent-coding workspace — most work happens through Claude Code sessions. See [`CLAUDE.md`](./CLAUDE.md) for project-level conventions agents should follow.
+Most work happens through Claude Code sessions, and almost always *inside one lab*. Each
+lab is self-contained — its own README/`CLAUDE.md` is the authoritative entry point for
+that lab's scope and conventions.
 
-Each lab is self-contained; tooling, references, and findings live alongside the work they describe. Per-lab READMEs (where present) are the authoritative entry point for that lab.
+- **Edit a lab:** `cd <lab>/`, commit and push *inside* the lab (it's its own repo),
+  then `git add <lab> && git commit` at the root to bump the pinned commit.
+- **Update a lab to its latest:** `git submodule update --remote <lab>`, then bump.
+- **Context re-scoping:** the `claude/` harness installs a `lab-scope` hook that
+  announces which lab you're in (by working directory) and points at its entry doc.
+  See *Lab scoping* in [`CLAUDE.md`](./CLAUDE.md).
 
 ## Layout conventions
 
 Across the labs, recurring directory names mean the same thing:
 
 - `tools/` — runnable scripts (mostly Python).
-- `findings/` — durable knowledge surfaced across sessions.
+- `findings/` — durable knowledge surfaced across sessions (append-only).
 - `reference/` — raw user-supplied artifacts (HID dumps, logs, screenshots).
-- `vision/` — preserved long-term direction docs that aren't actively executed but inform future plans (cite line anchors via the dir's `INDEX.md`).
+- `runs/` — timestamped per-run evidence/diagnostics.
+- `vision/` — preserved long-term direction docs (cite line anchors via the dir's `INDEX.md`).
+- `handoffs/` / `HANDOFF.md` — resumable session entry points; don't edit casually.
