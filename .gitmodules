@@ -6,3 +6,7 @@
 	path = agent
 	url = https://github.com/JangMan-J/JangLabs-agent.git
 	branch = main
+[submodule "claude"]
+	path = claude
+	url = https://github.com/JangMan-J/JangLabs-claude.git
+	branch = main
