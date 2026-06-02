@@ -1,12 +1,13 @@
 # claude
 
-A Claude Code harness for this box. Six hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
+A Claude Code harness for this box. Seven hook scripts + a CLAUDE.md fragment + a settings.json fragment, installed globally to `~/.claude/`. Designed to be cheap per turn, narrow in scope, and easy to remove.
 
 ## What it does
 
 | Layer | Mechanism | Hook event | Cost per turn |
 |-------|-----------|------------|---------------|
 | Input grounding | `system-fingerprint.sh` injects 9 lines of immutable box facts (kernel, pacman/yay, systemd-boot, NVIDIA, etc.) | `UserPromptSubmit` | ~5ms cached |
+| Workspace scoping | `lab-scope.sh` detects which lab of a `.claude-workspace`-marked tree (e.g. `~/JangLabs`) the cwd is in and injects a scope banner — only when the lab changes; silent elsewhere | `UserPromptSubmit` | ~5ms, no-op off-workspace |
 | Pre-emptive redirection | `bash-idiom-guard.sh` blocks `apt`/`yum`/`grub-*`/`service` etc. with a corrective message | `PreToolUse` (Bash) | ~5ms when fires |
 | Output verification | `syntax-check-touched.sh` runs `jq empty` / `python -c ast.parse` / `bash -n` etc. on touched files | `PostToolUse` (Edit/Write/MultiEdit) | 10–100ms when fires |
 | Secret-write block | `forbidden-files-guard.sh` blocks writes to `.env`, `*.key`, `*.pem`, `~/.ssh/`, `~/.gnupg/` | `PreToolUse` (Edit/Write/MultiEdit) | ~5ms |
@@ -47,6 +48,7 @@ Removes the symlinks, the CLAUDE.md fragment block, and the hook entries from `s
 | File | Role |
 |------|------|
 | `hooks/system-fingerprint.sh` | UserPromptSubmit — 9-line box fingerprint, cached 60s |
+| `hooks/lab-scope.sh` | UserPromptSubmit — inject a lab scope banner when the cwd's lab changes inside a `.claude-workspace`-marked tree; silent off-workspace |
 | `hooks/bash-idiom-guard.sh` | PreToolUse(Bash) — block non-Arch idioms |
 | `hooks/syntax-check-touched.sh` | PostToolUse(Edit/Write) — narrow syntax verification |
 | `hooks/forbidden-files-guard.sh` | PreToolUse(Edit/Write) — block secret-path writes |

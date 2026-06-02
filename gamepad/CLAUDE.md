@@ -1,5 +1,7 @@
 # gamepad — agent conventions
 
+> **Lab scope — `gamepad/`** · nested repo [`JangLabs-gamepad`](https://github.com/JangMan-J/JangLabs-gamepad). This file is the authority for work *inside this lab* and **overrides** the workspace root [`../CLAUDE.md`](../CLAUDE.md). Stay in this lab — don't reach into or edit sibling labs from here. (This lab references the sibling `jangsjyro` submodule by path — read-only, never vendored.)
+
 ## Read first
 
 1. [`README.md`](./README.md) — current focus and lab layout.

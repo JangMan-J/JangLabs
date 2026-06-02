@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+*.swp
+*~
+.DS_Store
+
+# Note: runs/ holds ephemeral per-invocation diagnostics but is intentionally
+# tracked (a worked example lives there). Promote durable conclusions to findings/.

@@ -1,5 +1,7 @@
 # agent — conventions
 
+> **Lab scope — `agent/`** · nested repo [`JangLabs-agent`](https://github.com/JangMan-J/JangLabs-agent). This file is the authority for work *inside this lab* and **overrides** the workspace root [`../CLAUDE.md`](../CLAUDE.md). Stay in this lab — don't reach into or edit sibling labs from here.
+
 ## What lives here
 
 Multi-agent and multi-worker coordination experiments. `convergent-arbiter/` is the current usable skill package. `acp_arbiter.md` coordinates ACP-compatible coding agents, while `agent_team_arbiter.md` adapts the same arbitration objective to Claude Code Agent Teams. See `README.md` for purpose and runtime expectations.

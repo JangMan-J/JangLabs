@@ -1,5 +1,7 @@
 # claude — agent conventions
 
+> **Lab scope — `claude/`** · nested repo [`JangLabs-claude`](https://github.com/JangMan-J/JangLabs-claude). This file is the authority for work *inside this lab* and **overrides** the workspace root [`../CLAUDE.md`](../CLAUDE.md). Stay in this lab — don't reach into or edit sibling labs from here.
+
 ## What lives here
 
 Hook scripts + a CLAUDE.md fragment + a hooks-only settings fragment that together constitute the Claude Code harness for this box. Installed globally to `~/.claude/` via `install.sh`. See `README.md` for what each file does.

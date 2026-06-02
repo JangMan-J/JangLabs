@@ -198,9 +198,8 @@ expected source role, not discovering every role by hand.
 
 ## Open Caution
 
-There is an untracked `assets/` directory containing:
-
-- `assets/icons/dolphin-modern-glass.png`
-
-It was not part of the Arc Dark source-correlation slice. Do not assume it is
-related without checking with the user or inspecting its provenance.
+**Resolved (2026-06-01):** the stray root-level `assets/` directory (which held
+`assets/icons/dolphin-modern-glass.png`) has been removed. Under the JangLabs
+nested-repo-only policy, nothing but lab submodules may live at the workspace
+root, so the directory was deleted. It was never part of the Arc Dark
+source-correlation slice.
