@@ -10,10 +10,6 @@
 	path = claude
 	url = https://github.com/JangMan-J/JangLabs-Claude.git
 	branch = main
-[submodule "gamepad"]
-	path = gamepad
-	url = https://github.com/JangMan-J/JangLabs-Gamepad.git
-	branch = main
 [submodule "proton"]
 	path = proton
 	url = https://github.com/JangMan-J/JangLabs-Proton.git
