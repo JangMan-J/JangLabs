@@ -2,3 +2,7 @@
 	path = jangsjyro
 	url = https://github.com/JangMan-J/jangsjyro.git
 	branch = branch-a-port
+[submodule "agent"]
+	path = agent
+	url = https://github.com/JangMan-J/JangLabs-agent.git
+	branch = main
