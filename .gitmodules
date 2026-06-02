@@ -14,3 +14,7 @@
 	path = gamepad
 	url = https://github.com/JangMan-J/JangLabs-gamepad.git
 	branch = main
+[submodule "proton"]
+	path = proton
+	url = https://github.com/JangMan-J/JangLabs-proton.git
+	branch = main
