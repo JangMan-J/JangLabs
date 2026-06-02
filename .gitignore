@@ -15,7 +15,6 @@ ENV/
 htmlcov/
 *.egg-info/
 dist/
-build/
 
 # Node (in case any lab adds JS tooling)
 node_modules/
@@ -53,6 +52,9 @@ desktop.ini
 *.log
 *.tmp
 
-# claude harness installer backups (per-machine, not portable)
-claude/.install-backups/
-claude/.uninstall-backups/
+# --- Workspace build output (the ONE sanctioned non-submodule directory at root) ---
+# Compiled binaries/artifacts from lab tools land in /build/ (namespace per lab,
+# e.g. /build/gamepad/...). They are regenerable, so the contents are ignored —
+# only /build/README.md is tracked, which keeps the directory present on clone.
+/build/*
+!/build/README.md

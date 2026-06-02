@@ -12,16 +12,17 @@ as a git submodule.
 
 ## The invariant — do not break it
 
-**Every top-level directory not beginning with `.` is a git submodule, and nothing else
-lives at the workspace root.** Only these may sit at the root:
+**Every top-level directory not beginning with `.` is a git submodule (one exception:
+`build/`), and nothing else lives at the workspace root.** Only these may sit at the root:
 
-1. Submodules (the labs).
+1. Submodules (the labs). Submodule path is lowercase; its repo is PascalCase (`agent` → `Agent`).
 2. Dot-files / dot-dirs (`.git`, `.gitmodules`, `.gitignore`, `.devcontainer/`, `.claude-workspace`).
 3. Root coordinator files (`CLAUDE.md`, `README.md`, `AGENTS.md`).
+4. `build/` — the one sanctioned non-submodule dir: git-ignored compiled output from lab tools (only its README is tracked).
 
-So: **never** create a plain directory or a stray file at the root. New work becomes its
-own repo + submodule (`git submodule add`). Reference a sibling lab by path/URL — never
-vendor or copy it in.
+So: **never** create a plain directory (other than `build/`) or a stray file at the root.
+New work becomes its own repo + submodule (`git submodule add`). Reference a sibling lab
+by path/URL — never vendor or copy it in.
 
 ## Scope to the lab you're in
 

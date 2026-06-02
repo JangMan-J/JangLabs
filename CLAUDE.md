@@ -10,9 +10,10 @@ here as a **git submodule**.
 ## The workspace invariant (read this first)
 
 > **Every top-level directory whose name does not begin with `.` is a nested
-> repository (a git submodule). Nothing else may live at the workspace root.**
+> repository (a git submodule) — with a single exception, `build/`. Nothing else
+> may live at the workspace root.**
 
-There are exactly three kinds of entry allowed at the root of JangLabs:
+There are exactly four kinds of entry allowed at the root of JangLabs:
 
 1. **Submodules** — one per lab. Each is its own repo with its own remote, history,
    `CLAUDE.md`, conventions, and lifecycle. Pinned here by commit SHA.
@@ -20,12 +21,18 @@ There are exactly three kinds of entry allowed at the root of JangLabs:
    `.devcontainer/`, `.claude-workspace`. Tooling and config only.
 3. **Root coordinator files** — `CLAUDE.md` (this file), `README.md`, `AGENTS.md`.
    These describe the workspace; they do not implement any lab.
+4. **`build/`** — the single sanctioned exception: a non-submodule output directory
+   where compiled binaries/artifacts from the labs' tools are collected (namespaced
+   per lab, e.g. `build/gamepad/`). Its contents are git-ignored — only
+   `build/README.md` is tracked. This is the *only* non-submodule, non-dot directory
+   permitted at the root; do not add others.
 
 **Consequences — enforce these:**
 
-- **Never** create a plain (non-submodule) directory at the root. No `assets/`, no
-  `shared/`, no `scratch/`, no `tmp/`. If something needs a home, it belongs *inside*
-  a lab (each lab has its own `reference/`, `findings/`, `tools/`, etc.).
+- **Never** create a plain (non-submodule) directory at the root other than `build/`.
+  No `assets/`, no `shared/`, no `scratch/`, no `tmp/`. If something needs a home, it
+  belongs *inside* a lab (each lab has its own `reference/`, `findings/`, `tools/`,
+  etc.) — except compiled output, which goes in `build/`.
 - **Never** add a loose file at the root other than the three coordinators above.
 - To bring **new** work into the workspace, it must become **its own repo + submodule**
   — see *Adding a lab*. Do not "just drop it in" as a folder.
@@ -40,19 +47,21 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All six top-level directories are submodules (`git submodule status` to see pinned SHAs):
+All six lab directories are submodules (`git submodule status` to see pinned SHAs).
+**Naming:** the submodule path is lowercase, its repo is PascalCase (`agent` → `Agent`).
 
 | Lab (submodule) | Repository | Branch | Focus | Entry doc |
 |---|---|---|---|---|
-| `agent/` | [`JangMan-J/JangLabs-agent`](https://github.com/JangMan-J/JangLabs-agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
-| `claude/` | [`JangMan-J/JangLabs-claude`](https://github.com/JangMan-J/JangLabs-claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. | `claude/CLAUDE.md` |
-| `gamepad/` | [`JangMan-J/JangLabs-gamepad`](https://github.com/JangMan-J/JangLabs-gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
-| `jangsjyro/` | [`JangMan-J/jangsjyro`](https://github.com/JangMan-J/jangsjyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
-| `proton/` | [`JangMan-J/JangLabs-proton`](https://github.com/JangMan-J/JangLabs-proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
-| `theme/` | [`JangMan-J/JangLabs-theme`](https://github.com/JangMan-J/JangLabs-theme) | `main` | Data-first terminal→desktop color-role mapping (KDE, Kvantum, Kitty, Warp). | `theme/HANDOFF.md` |
+| `agent/` | [`JangMan-J/Agent`](https://github.com/JangMan-J/Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
+| `claude/` | [`JangMan-J/Claude`](https://github.com/JangMan-J/Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. | `claude/CLAUDE.md` |
+| `gamepad/` | [`JangMan-J/Gamepad`](https://github.com/JangMan-J/Gamepad) | `main` | Linux gamepad input (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM). Depends on the `jangsjyro` sibling. | `gamepad/CLAUDE.md` |
+| `jangsjyro/` | [`JangMan-J/JangsJyro`](https://github.com/JangMan-J/JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork — the JSM source-of-record for `gamepad/`. C++23, upstream-facing. | `jangsjyro/AGENTS.md` |
+| `proton/` | [`JangMan-J/Proton`](https://github.com/JangMan-J/Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
+| `theme/` | [`JangMan-J/Theme`](https://github.com/JangMan-J/Theme) | `main` | Data-first terminal→desktop color-role mapping (KDE, Kvantum, Kitty, Warp). | `theme/HANDOFF.md` |
 
 `jangsjyro` is the model the others now follow: an independent repo, pinned by SHA,
-never vendored into JangLabs history. The five `JangLabs-*` repos were fresh-init
+never vendored into JangLabs history (its repo keeps its established `JangsJyro` name).
+The five lab repos (`Agent`/`Claude`/`Gamepad`/`Proton`/`Theme`) were fresh-init
 extractions of formerly in-tree labs (their pre-extraction history lives in JangLabs'
 own git log).
 
@@ -66,7 +75,7 @@ the authority — see *Lab scoping*.
 
 ### Submodule mechanics
 
-- **Clone:** `git clone --recurse-submodules <JangLabs-url>`. On an existing checkout
+- **Clone:** `git clone --recurse-submodules https://github.com/JangMan-J/JangLabs.git`. On an existing checkout
   that is missing lab contents: `git submodule update --init --recursive`.
 - **A lab is pinned by SHA.** JangLabs records *which commit* of each lab it expects.
   After you commit inside a lab, JangLabs shows the submodule as modified until you
@@ -80,13 +89,13 @@ the authority — see *Lab scoping*.
   pointer as above.
 - **`gamepad` ↔ `jangsjyro` coupling:** `gamepad/` reads the JSM source at
   `../jangsjyro` (read-only, never vendored). That path only resolves inside a full
-  JangLabs checkout, so do gamepad work here, not in a standalone `JangLabs-gamepad`
-  clone.
+  JangLabs checkout, so do gamepad work here, not in a standalone `Gamepad` clone.
 
 ### Adding a lab
 
-1. Create the lab as its **own** git repo (`JangLabs-<name>`), push it to a remote.
-2. `git submodule add -b <branch> <url> <name>` at the JangLabs root.
+1. Create the lab as its **own** git repo (PascalCase name; submodule `foo` → repo `Foo`),
+   push it to a remote.
+2. `git submodule add -b <branch> <url> <name>` at the JangLabs root (path stays lowercase).
 3. `git commit`. Add a row to the table above and to `README.md`.
 
 Do **not** add a lab by creating a plain directory — that violates the invariant and
@@ -119,8 +128,8 @@ and an automation, so re-scoping is intuitive as you move between subdirectories
 
 The `claude/` harness ships `hooks/lab-scope.sh` (a `UserPromptSubmit` hook). It walks
 up from the session's working directory to the `.claude-workspace` marker at the
-workspace root; when found, it treats each top-level non-dot child as a lab and, **the
-moment the active lab changes**, injects a one-paragraph scope banner naming the lab and
+workspace root; when found, it treats each top-level non-dot child (except `build/`) as a
+lab and, **the moment the active lab changes**, injects a one-paragraph scope banner naming the lab and
 its entry doc. It is silent off-workspace and when the lab is unchanged, so it costs
 nothing until you actually re-scope.
 
@@ -135,8 +144,10 @@ nothing until you actually re-scope.
 ## Repo-level conventions
 
 - **Branch for PRs:** `main` (in JangLabs and in each lab repo).
-- **No build system at the workspace root.** Each lab manages its own dependencies
-  (usually ad-hoc Python; some have their own `requirements.txt`).
+- **No build *system* at the workspace root** — each lab owns its own build/deps
+  (usually ad-hoc Python; some have their own `requirements.txt`). Compiled *output*,
+  however, is collected at the root in **`build/`** (the one sanctioned non-submodule
+  dir; contents git-ignored, namespaced per lab — see `build/README.md`).
 - **Avoid absolute-path symlinks** — they break on clone. Reference other work by path
   (within a checkout) or by URL; never vendor a sibling lab's files.
 - **Large binary artifacts** (screenshots, HID dumps, capture logs) live under the

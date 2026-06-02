@@ -5,8 +5,9 @@ tooling. It is a **monorepo of submodules**: a thin coordinator whose every top-
 directory is an independent project ("lab") living in its own git repository.
 
 > **Workspace rule:** every top-level directory not beginning with `.` is a git
-> submodule, and nothing else lives at the root. See [`CLAUDE.md`](./CLAUDE.md) and
-> [`AGENTS.md`](./AGENTS.md) for the full policy and the conventions agents follow.
+> submodule (the one exception is `build/`, a git-ignored output dir), and nothing else
+> lives at the root. See [`CLAUDE.md`](./CLAUDE.md) and [`AGENTS.md`](./AGENTS.md) for
+> the full policy and the conventions agents follow.
 
 ## Clone
 
@@ -18,14 +19,19 @@ git submodule update --init --recursive
 
 ## Labs
 
+Submodule paths are lowercase; their repos are PascalCase (`agent` → `Agent`).
+
 | Lab | Repository | Focus |
 |-----|------------|-------|
-| [`agent/`](./agent) | [`JangLabs-agent`](https://github.com/JangMan-J/JangLabs-agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
-| [`claude/`](./claude) | [`JangLabs-claude`](https://github.com/JangMan-J/JangLabs-claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
-| [`gamepad/`](./gamepad) | [`JangLabs-gamepad`](https://github.com/JangMan-J/JangLabs-gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
-| [`jangsjyro/`](./jangsjyro) | [`jangsjyro`](https://github.com/JangMan-J/jangsjyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
-| [`proton/`](./proton) | [`JangLabs-proton`](https://github.com/JangMan-J/JangLabs-proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
-| [`theme/`](./theme) | [`JangLabs-theme`](https://github.com/JangMan-J/JangLabs-theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
+| [`agent/`](./agent) | [`Agent`](https://github.com/JangMan-J/Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
+| [`claude/`](./claude) | [`Claude`](https://github.com/JangMan-J/Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `install.sh`. |
+| [`gamepad/`](./gamepad) | [`Gamepad`](https://github.com/JangMan-J/Gamepad) | 8BitDo Ultimate 2 Wireless: Linux input-latency / gyro work and the Steam-Input-vs-JSM comparison lab. Reads the `jangsjyro` sibling. |
+| [`jangsjyro/`](./jangsjyro) | [`JangsJyro`](https://github.com/JangMan-J/JangsJyro) | The JangsJyro JoyShockMapper fork — JSM source for `gamepad/` (tracks `branch-a-port`). |
+| [`proton/`](./proton) | [`Proton`](https://github.com/JangMan-J/Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
+| [`theme/`](./theme) | [`Theme`](https://github.com/JangMan-J/Theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
+
+Plus **`build/`** at the root — a git-ignored directory that collects compiled
+lab-tool output (the sole non-submodule directory; see [`CLAUDE.md`](./CLAUDE.md)).
 
 ## Working with this repo
 
