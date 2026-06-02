@@ -26,6 +26,7 @@ already in `metadata.type` and the `[Method]`/`[Fumble]` title prefix.)
 - proton-gaming — ProtonDB, Steam, Proton, anti-cheat
 - vfio — GPU passthrough (Windows VM)
 - claude-harness — this box's Claude Code: hooks, fingerprint, statusline, LSP, MCP, workflow, memory
+- node-tooling — Node.js / npm and globally-installed JS CLIs (ctx7, pyright, typescript-language-server, playwright) under /usr/lib/node_modules
 
 ## tool
 - asusctl — ASUS control (armoury / gpu_mux)
