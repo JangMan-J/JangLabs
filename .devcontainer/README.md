@@ -46,10 +46,11 @@ Install the **Dev Containers** extension, set `dev.containers.dockerPath` to
 
 ## Per-lab Python dependencies
 
-The image ships Python + `uv`; per-lab deps stay scoped to each lab:
+The image ships Python + `uv`; per-lab deps stay scoped to each lab. For any
+lab that ships a `requirements.txt`:
 
 ```sh
-cd theme && uv venv && uv pip install -r requirements.txt
+cd <lab> && uv venv && uv pip install -r requirements.txt
 ```
 
 ## Notes

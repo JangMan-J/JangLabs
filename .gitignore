@@ -58,3 +58,11 @@ desktop.ini
 # only /build/README.md is tracked, which keeps the directory present on clone.
 /build/*
 !/build/README.md
+
+# --- Local-only working files at root (NOT part of the repo; see CLAUDE.md invariant) ---
+# Personal scratch/tooling kept at the workspace root for convenience; never committed.
+# The tracked root stays submodules + the three coordinator files only. If any of these
+# ever earns a permanent home, move it into the owning lab rather than tracking it here.
+/.handoffs
+/handoffs/
+/fix-memory-plug.sh

@@ -10,7 +10,7 @@ python -m pip install --user --upgrade uv
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# ruff — lint + format for the Python labs (gamepad/proton/theme).
+# ruff — lint + format for the labs that use Python (e.g. claude/, proton/).
 uv tool install ruff
 
 # shellcheck — for the claude/ shell hooks.
@@ -21,4 +21,4 @@ fi
 
 echo ">> done."
 echo ">> Per-lab Python deps (where a requirements.txt exists), e.g.:"
-echo ">>   cd theme && uv venv && uv pip install -r requirements.txt"
+echo ">>   cd <lab> && uv venv && uv pip install -r requirements.txt"
