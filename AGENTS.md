@@ -41,5 +41,5 @@ back at the root `git add <lab> && git commit` to bump the pinned SHA. Branch fo
 
 ## Labs
 
-`agent` · `claude` · `gamepad` · `jangsjyro` · `proton` · `theme` — see the table in
+`agent` · `claude` · `gamepad` · `jangsjyro` · `proton` — see the table in
 [`README.md`](./README.md) for repos and focus, and each lab's own `CLAUDE.md`.

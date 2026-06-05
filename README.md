@@ -28,7 +28,6 @@ prefix (`agent` → `JangLabs-Agent`).
 | [`claude/`](./claude) | [`JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. |
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork (C++23; tracks `branch-a-port`). Hosts the `gamepad/` input-research lab (8BitDo / gyro / Steam-Input-vs-JSM) as a subdir. |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
-| [`theme/`](./theme) | [`JangLabs-Theme`](https://github.com/JangMan-J/JangLabs-Theme) | Data-first theme capture and semantic color-role mapping across KDE, Kvantum, Kitty, and Warp. |
 
 Plus **`build/`** at the root — a git-ignored directory that collects compiled
 lab-tool output (the sole non-submodule directory; see [`CLAUDE.md`](./CLAUDE.md)).

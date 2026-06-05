@@ -14,7 +14,7 @@
 	path = proton
 	url = https://github.com/JangMan-J/JangLabs-Proton.git
 	branch = main
-[submodule "theme"]
-	path = theme
-	url = https://github.com/JangMan-J/JangLabs-Theme.git
+[submodule "jangsjedi"]
+	path = jangsjedi
+	url = https://github.com/JangMan-J/JangLabs-JangsJedi.git
 	branch = main
