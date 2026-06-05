@@ -47,7 +47,7 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All four lab directories are submodules (`git submodule status` to see pinned SHAs).
+All five lab directories are submodules (`git submodule status` to see pinned SHAs).
 **Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
 `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
@@ -55,6 +55,7 @@ All four lab directories are submodules (`git submodule status` to see pinned SH
 |---|---|---|---|---|
 | `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
 | `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `claude/CLAUDE.md` |
+| `jangsjedi/` | [`JangMan-J/JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | `main` | Visual orchestrator for multiple **interactive** Claude Code workers on a Pro/Max subscription — a Rust workspace (supervisor + `agent-comms` spine; CXX-Qt/Kirigami UI spike). | `jangsjedi/CLAUDE.md` |
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
 
@@ -63,7 +64,9 @@ by SHA, never vendored into JangLabs history (it was the one lab already indepen
 before the others were extracted). The three others (`JangLabs-Agent`/`JangLabs-Claude`/
 `JangLabs-Proton`) were fresh-init extractions of
 formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
-four repos now share the `JangLabs-` name prefix (its repo is `JangLabs-JangsJyro`). (A
+five repos now share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
+`jangsjedi` (added 2026-06-03) is a fresh standalone-first lab — its own repo wired in
+directly, not an extraction of in-tree history. (A
 sixth, `JangLabs-Gamepad`, was likewise extracted but has since been folded into
 `jangsjyro/gamepad/` and its submodule retired — its history remains in JangLabs' git log.
 `JangLabs-Theme` was similarly extracted, then removed as a submodule on 2026-06-04 — its
