@@ -5,9 +5,8 @@ tooling. It is a **monorepo of submodules**: a thin coordinator whose every top-
 directory is an independent project ("lab") living in its own git repository.
 
 > **Workspace rule:** every top-level directory not beginning with `.` is a git
-> submodule (the one exception is `build/`, a git-ignored output dir), and nothing else
-> lives at the root. See [`CLAUDE.md`](./CLAUDE.md) and [`AGENTS.md`](./AGENTS.md) for
-> the full policy and the conventions agents follow.
+> submodule, and nothing else lives at the root. See [`CLAUDE.md`](./CLAUDE.md) and
+> [`AGENTS.md`](./AGENTS.md) for the full policy and the conventions agents follow.
 
 ## Clone
 
@@ -29,9 +28,6 @@ prefix (`agent` → `JangLabs-Agent`).
 | [`jangsjedi/`](./jangsjedi) | [`JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | Visual orchestrator for multiple interactive Claude Code workers on a Pro/Max subscription (Rust workspace; supervisor + `agent-comms` spine, CXX-Qt UI spike). |
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork (C++23; tracks `branch-a-port`). Hosts the `gamepad/` input-research lab (8BitDo / gyro / Steam-Input-vs-JSM) as a subdir. |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
-
-Plus **`build/`** at the root — a git-ignored directory that collects compiled
-lab-tool output (the sole non-submodule directory; see [`CLAUDE.md`](./CLAUDE.md)).
 
 ## Working with this repo
 

@@ -10,10 +10,9 @@ here as a **git submodule**.
 ## The workspace invariant (read this first)
 
 > **Every top-level directory whose name does not begin with `.` is a nested
-> repository (a git submodule) — with a single exception, `build/`. Nothing else
-> may live at the workspace root.**
+> repository (a git submodule). Nothing else may live at the workspace root.**
 
-There are exactly four kinds of entry allowed at the root of JangLabs:
+There are exactly three kinds of entry allowed at the root of JangLabs:
 
 1. **Submodules** — one per lab. Each is its own repo with its own remote, history,
    `CLAUDE.md`, conventions, and lifecycle. Pinned here by commit SHA.
@@ -21,18 +20,14 @@ There are exactly four kinds of entry allowed at the root of JangLabs:
    `.devcontainer/`, `.claude-workspace`. Tooling and config only.
 3. **Root coordinator files** — `CLAUDE.md` (this file), `README.md`, `AGENTS.md`.
    These describe the workspace; they do not implement any lab.
-4. **`build/`** — the single sanctioned exception: a non-submodule output directory
-   where compiled binaries/artifacts from the labs' tools are collected (namespaced
-   per lab, e.g. `build/jangsjyro/`). Its contents are git-ignored — only
-   `build/README.md` is tracked. This is the *only* non-submodule, non-dot directory
-   permitted at the root; do not add others.
-
 **Consequences — enforce these:**
 
-- **Never** create a plain (non-submodule) directory at the root other than `build/`.
-  No `assets/`, no `shared/`, no `scratch/`, no `tmp/`. If something needs a home, it
-  belongs *inside* a lab (each lab has its own `reference/`, `findings/`, `tools/`,
-  etc.) — except compiled output, which goes in `build/`.
+- **Never** create a plain (non-submodule) directory at the root.
+  No `assets/`, no `shared/`, no `scratch/`, no `tmp/`, no `build/`. If something needs
+  a home, it belongs *inside* a lab (each lab has its own `reference/`, `findings/`,
+  `tools/`, etc.). Regenerable cross-lab build output, if ever needed, goes in a
+  git-ignored **dot-directory** (`.build/`) — a dot-dir needs no exception to this
+  invariant. See *Repo-level conventions*.
 - **Never** add a loose file at the root other than the three coordinators above.
 - To bring **new** work into the workspace, it must become **its own repo + submodule**
   — see *Adding a lab*. Do not "just drop it in" as a folder.
@@ -131,7 +126,7 @@ and an automation, so re-scoping is intuitive as you move between subdirectories
 
 The `claude/` harness ships `hooks/lab-scope.sh` (a `UserPromptSubmit` hook). It walks
 up from the session's working directory to the `.claude-workspace` marker at the
-workspace root; when found, it treats each top-level non-dot child (except `build/`) as a
+workspace root; when found, it treats each top-level non-dot child as a
 lab and, **the moment the active lab changes**, injects a one-paragraph scope banner naming the lab and
 its entry doc. It is silent off-workspace and when the lab is unchanged, so it costs
 nothing until you actually re-scope.
@@ -147,10 +142,13 @@ nothing until you actually re-scope.
 ## Repo-level conventions
 
 - **Branch for PRs:** `main` (in JangLabs and in each lab repo).
-- **No build *system* at the workspace root** — each lab owns its own build/deps
-  (usually ad-hoc Python; some have their own `requirements.txt`). Compiled *output*,
-  however, is collected at the root in **`build/`** (the one sanctioned non-submodule
-  dir; contents git-ignored, namespaced per lab — see `build/README.md`).
+- **No build *system* or build *output* at the workspace root** — each lab owns its
+  own build/deps (usually ad-hoc Python; some have their own `requirements.txt`) and
+  its own compiled output. If a future need calls for collecting cross-lab artifacts
+  in one place, use a git-ignored **dot-directory** (`.build/`, namespaced per lab as
+  `.build/<lab>/`): a dot-dir is already excluded by the "non-dot ⇒ submodule" rule,
+  so it needs no exception — which is exactly why the former tracked `build/` dir
+  (which did need one) was retired.
 - **Avoid absolute-path symlinks** — they break on clone. Reference other work by path
   (within a checkout) or by URL; never vendor a sibling lab's files.
 - **Large binary artifacts** (screenshots, HID dumps, capture logs) live under the

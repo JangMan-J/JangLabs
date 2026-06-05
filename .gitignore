@@ -52,17 +52,9 @@ desktop.ini
 *.log
 *.tmp
 
-# --- Workspace build output (the ONE sanctioned non-submodule directory at root) ---
-# Compiled binaries/artifacts from lab tools land in /build/ (namespace per lab,
-# e.g. /build/gamepad/...). They are regenerable, so the contents are ignored —
-# only /build/README.md is tracked, which keeps the directory present on clone.
-/build/*
-!/build/README.md
-
-# --- Local-only working files at root (NOT part of the repo; see CLAUDE.md invariant) ---
-# Personal scratch/tooling kept at the workspace root for convenience; never committed.
-# The tracked root stays submodules + the three coordinator files only. If any of these
-# ever earns a permanent home, move it into the owning lab rather than tracking it here.
-/.handoffs
-/handoffs/
-/fix-memory-plug.sh
+# --- Cross-lab build output (a dot-dir, so it needs NO exception to the
+# submodules-only-at-root invariant; the former tracked /build/ was retired). ---
+# If a future need collects regenerable lab-tool artifacts at the root, put them
+# under /.build/<lab>/ — git-ignored, namespaced per lab. Build systems/sources
+# stay inside each lab. (Note: .claude/ is ignored globally via ~/.config/git/ignore.)
+/.build/

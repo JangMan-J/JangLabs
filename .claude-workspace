@@ -3,8 +3,8 @@
 # Presence of this file marks the directory as a multi-lab workspace. The
 # lab-scope hook (claude/hooks/lab-scope.sh, symlinked to ~/.claude/hooks/ by
 # claude/agent-harness.py) walks UP from a session's working directory to find this
-# marker. When found, it treats every immediate non-dot child directory (except
-# the sanctioned build/ output dir) as an independent lab scope and, the moment
+# marker. When found, it treats every immediate non-dot child directory as an
+# independent lab scope and, the moment
 # the active lab changes, injects a short banner pointing at that lab's
 # authoritative entry doc (its CLAUDE.md, which overrides this workspace root).
 #
@@ -12,4 +12,3 @@
 # the hook does not parse. Keep it a dotfile so it doesn't count as a lab.
 name: JangLabs
 entry-doc-precedence: CLAUDE.md AGENTS.md README.md HANDOFF.md
-non-lab-dirs: build
