@@ -157,11 +157,18 @@ handoffs stay with the lab), but it scatters them across many directories.
   that lab's work. Cross-lab / root-level handoffs go in `.claude/handoffs/` here.
 - **One tracked exception:** `claude/handoffs/` (no dot) holds committed *design-record*
   handoffs cited by `claude/README.md` — an archive, not scratch. Leave it tracked.
-- **Discovery:** `.handoff_index` at this root is a generated `filename → real-path` map
-  of every handoff across all of the above plus `~/.claude/handoffs/`. It's a git-ignored
-  root dot-file (honors the *non-dot ⇒ submodule* invariant with no exception),
-  regenerated each session by `claude/hooks/handoff-index.sh`. Read it to find a handoff;
-  don't hand-edit it.
+- **Discovery:** `.handoff_index` at this root is a generated index of every handoff
+  across all of the above plus `~/.claude/handoffs/`, **grouped by scope**: cross-lab,
+  per-lab, box/unspecified, and stale. It's a git-ignored root dot-file (honors the
+  *non-dot ⇒ submodule* invariant with no exception), regenerated each session by
+  `claude/hooks/handoff-index.sh`. Read it to find a handoff; don't hand-edit it.
+- **Scope is by content, not directory.** Each handoff declares its bucket with a
+  `<!-- handoff-scope: X -->` tag inside the file (`X` = `cross-lab` | `<lab>` | `box` |
+  `stale`), set after *reading* it — because a handoff's real subject can differ from
+  where it physically sits (e.g. a box-level tool handoff that happens to live under a
+  lab). Untagged files are path-inferred and flagged `(inferred)` in the index; **to
+  reclassify, edit the file's tag**, not the index. New handoffs should add the tag (the
+  `session-handoff` skill writes them untagged, so they start as `(inferred)`).
 
 ---
 
