@@ -42,7 +42,7 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All five lab directories are submodules (`git submodule status` to see pinned SHAs).
+All six lab directories are submodules (`git submodule status` to see pinned SHAs).
 **Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
 `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
@@ -53,15 +53,18 @@ All five lab directories are submodules (`git submodule status` to see pinned SH
 | `jangsjedi/` | [`JangMan-J/JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | `main` | Visual orchestrator for multiple **interactive** Claude Code workers on a Pro/Max subscription — a Rust workspace (supervisor + `agent-comms` spine; CXX-Qt/Kirigami UI spike). | `jangsjedi/CLAUDE.md` |
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
+| `switchtail/` | [`JangMan-J/JangLabs-SwitchTail`](https://github.com/JangMan-J/JangLabs-SwitchTail) | `main` | SwitchTail — one-handed agent switchboard for kitty: the `stail` CLI, kittens, Plasma 6 board widget, systemd session-regen units. WIP lives on `versioning`. | `switchtail/CLAUDE.md` |
 
 `jangsjyro` is the structural model the others now follow: an independent repo, pinned
 by SHA, never vendored into JangLabs history (it was the one lab already independent
 before the others were extracted). The three others (`JangLabs-Agent`/`JangLabs-Claude`/
 `JangLabs-Proton`) were fresh-init extractions of
 formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
-five repos now share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
+six repos now share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
 `jangsjedi` (added 2026-06-03) is a fresh standalone-first lab — its own repo wired in
-directly, not an extraction of in-tree history. (A
+directly, not an extraction of in-tree history. `switchtail` (added 2026-06-10) was
+likewise standalone-first: the cockpit toolkit migrated out of loose `$HOME` files into
+its own repo, then wired in. (A
 sixth, `JangLabs-Gamepad`, was likewise extracted but has since been folded into
 `jangsjyro/gamepad/` and its submodule retired — its history remains in JangLabs' git log.
 `JangLabs-Theme` was similarly extracted, then removed as a submodule on 2026-06-04 — its
