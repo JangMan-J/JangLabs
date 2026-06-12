@@ -49,7 +49,7 @@ All six lab directories are submodules (`git submodule status` to see pinned SHA
 | Lab (submodule) | Repository | Branch | Focus | Entry doc |
 |---|---|---|---|---|
 | `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
-| `claude/` | [`JangMan-J/JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `claude/CLAUDE.md` |
+| `synapse/` | [`JangMan-J/JangLabs-Synapse`](https://github.com/JangMan-J/JangLabs-Synapse) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `synapse/CLAUDE.md` |
 | `jangsjedi/` | [`JangMan-J/JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | `main` | Visual orchestrator for multiple **interactive** Claude Code workers on a Pro/Max subscription — a Rust workspace (supervisor + `agent-comms` spine; CXX-Qt/Kirigami UI spike). | `jangsjedi/CLAUDE.md` |
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
@@ -57,7 +57,7 @@ All six lab directories are submodules (`git submodule status` to see pinned SHA
 
 `jangsjyro` is the structural model the others now follow: an independent repo, pinned
 by SHA, never vendored into JangLabs history (it was the one lab already independent
-before the others were extracted). The three others (`JangLabs-Agent`/`JangLabs-Claude`/
+before the others were extracted). The three others (`JangLabs-Agent`/`JangLabs-Synapse`/
 `JangLabs-Proton`) were fresh-init extractions of
 formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
 six repos now share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
@@ -68,7 +68,9 @@ its own repo, then wired in. (A
 sixth, `JangLabs-Gamepad`, was likewise extracted but has since been folded into
 `jangsjyro/gamepad/` and its submodule retired — its history remains in JangLabs' git log.
 `JangLabs-Theme` was similarly extracted, then removed as a submodule on 2026-06-04 — its
-repo remains on GitHub and its in-tree history lives in JangLabs' git log.)
+repo remains on GitHub and its in-tree history lives in JangLabs' git log.) `synapse` was
+the `claude` lab until 2026-06-11, when the lab, its repo (`JangLabs-Claude` →
+`JangLabs-Synapse`), and its memory taxonomy were renamed at GSD project initiation.
 
 ---
 
@@ -127,14 +129,14 @@ and an automation, so re-scoping is intuitive as you move between subdirectories
 
 ### The automation (`lab-scope` hook)
 
-The `claude/` harness ships `hooks/lab-scope.sh` (a `UserPromptSubmit` hook). It walks
+The `synapse/` harness ships `hooks/lab-scope.sh` (a `UserPromptSubmit` hook). It walks
 up from the session's working directory to the `.claude-workspace` marker at the
 workspace root; when found, it treats each top-level non-dot child as a
 lab and, **the moment the active lab changes**, injects a one-paragraph scope banner naming the lab and
 its entry doc. It is silent off-workspace and when the lab is unchanged, so it costs
 nothing until you actually re-scope.
 
-- **Enable it:** from `claude/`, run `./agent-harness.py install --apply`, then restart
+- **Enable it:** from `synapse/`, run `./agent-harness.py install --apply`, then restart
   Claude Code (or `/reload-plugins`). It registers alongside the other harness hooks.
 - **The marker** (`.claude-workspace`) is what flags this tree as a multi-lab workspace.
   Keep it at the root. The mechanism is generic — any future workspace that drops the
@@ -151,20 +153,20 @@ nothing until you actually re-scope.
 > exactly as the rest of this root file does.
 
 Session handoffs (from the `session-handoff` skill) are written to
-`<launch-cwd>/.claude/handoffs/` — so a handoff lands in whichever lab (or this root, or
+`<launch-cwd>/.synapse/handoffs/` — so a handoff lands in whichever lab (or this root, or
 `$HOME`) you launched from. Because `.claude/` is git-ignored everywhere, these are
 **untracked local scratch**, not committed history. That locality is intended (a lab's
 handoffs stay with the lab), but it scatters them across many directories.
 
-- **Per-lab scratch:** `<lab>/.claude/handoffs/` — the normal home for a handoff about
-  that lab's work. Cross-lab / root-level handoffs go in `.claude/handoffs/` here.
-- **One tracked exception:** `claude/handoffs/` (no dot) holds committed *design-record*
-  handoffs cited by `claude/README.md` — an archive, not scratch. Leave it tracked.
+- **Per-lab scratch:** `<lab>/.synapse/handoffs/` — the normal home for a handoff about
+  that lab's work. Cross-lab / root-level handoffs go in `.synapse/handoffs/` here.
+- **One tracked exception:** `synapse/handoffs/` (no dot) holds committed *design-record*
+  handoffs cited by `synapse/README.md` — an archive, not scratch. Leave it tracked.
 - **Discovery:** `.handoff_index` at this root is a generated index of every handoff
-  across all of the above plus `~/.claude/handoffs/`, **grouped by scope**: cross-lab,
+  across all of the above plus `~/.synapse/handoffs/`, **grouped by scope**: cross-lab,
   per-lab, box/unspecified, and stale. It's a git-ignored root dot-file (honors the
   *non-dot ⇒ submodule* invariant with no exception), regenerated each session by
-  `claude/hooks/handoff-index.sh`. Read it to find a handoff; don't hand-edit it.
+  `synapse/hooks/handoff-index.sh`. Read it to find a handoff; don't hand-edit it.
 - **Scope is by content, not directory.** Each handoff declares its bucket with a
   `<!-- handoff-scope: X -->` tag inside the file (`X` = `cross-lab` | `<lab>` | `box` |
   `stale`), set after *reading* it — because a handoff's real subject can differ from

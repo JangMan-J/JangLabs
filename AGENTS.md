@@ -29,7 +29,7 @@ by path/URL — never vendor or copy it in.
   `<lab>/`, **that lab's entry doc is the authority and overrides this root** (precedence
   `CLAUDE.md` → `AGENTS.md` → `README.md` → `HANDOFF.md`).
 - Don't cross lab boundaries: a convention in one lab does not apply to another.
-- The `claude/` harness installs a `lab-scope` hook that auto-announces the active lab
+- The `synapse/` harness installs a `lab-scope` hook that auto-announces the active lab
   (by cwd) and its entry doc; it keys off the `.claude-workspace` marker at the root.
 
 ## Editing a lab (submodule workflow)
@@ -40,5 +40,5 @@ back at the root `git add <lab> && git commit` to bump the pinned SHA. Branch fo
 
 ## Labs
 
-`agent` · `claude` · `gamepad` · `jangsjyro` · `proton` — see the table in
+`agent` · `synapse` · `gamepad` · `jangsjyro` · `proton` — see the table in
 [`README.md`](./README.md) for repos and focus, and each lab's own `CLAUDE.md`.

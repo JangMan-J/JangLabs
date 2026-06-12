@@ -6,9 +6,9 @@
 	path = agent
 	url = https://github.com/JangMan-J/JangLabs-Agent.git
 	branch = main
-[submodule "claude"]
-	path = claude
-	url = https://github.com/JangMan-J/JangLabs-Claude.git
+[submodule "synapse"]
+	path = synapse
+	url = https://github.com/JangMan-J/JangLabs-Synapse.git
 	branch = main
 [submodule "proton"]
 	path = proton

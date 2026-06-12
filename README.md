@@ -24,7 +24,7 @@ prefix (`agent` → `JangLabs-Agent`).
 | Lab | Repository | Focus |
 |-----|------------|-------|
 | [`agent/`](./agent) | [`JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
-| [`claude/`](./claude) | [`JangLabs-Claude`](https://github.com/JangMan-J/JangLabs-Claude) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. |
+| [`synapse/`](./synapse) | [`JangLabs-Synapse`](https://github.com/JangMan-J/JangLabs-Synapse) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. |
 | [`jangsjedi/`](./jangsjedi) | [`JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | Visual orchestrator for multiple interactive Claude Code workers on a Pro/Max subscription (Rust workspace; supervisor + `agent-comms` spine, CXX-Qt UI spike). |
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork (C++23; tracks `branch-a-port`). Hosts the `gamepad/` input-research lab (8BitDo / gyro / Steam-Input-vs-JSM) as a subdir. |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
@@ -39,7 +39,7 @@ that lab's scope and conventions.
 - **Edit a lab:** `cd <lab>/`, commit and push *inside* the lab (it's its own repo),
   then `git add <lab> && git commit` at the root to bump the pinned commit.
 - **Update a lab to its latest:** `git submodule update --remote <lab>`, then bump.
-- **Context re-scoping:** the `claude/` harness installs a `lab-scope` hook that
+- **Context re-scoping:** the `synapse/` harness installs a `lab-scope` hook that
   announces which lab you're in (by working directory) and points at its entry doc.
   See *Lab scoping* in [`CLAUDE.md`](./CLAUDE.md).
 
