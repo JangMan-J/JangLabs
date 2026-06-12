@@ -42,7 +42,7 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All six lab directories are submodules (`git submodule status` to see pinned SHAs).
+All five lab directories are submodules (`git submodule status` to see pinned SHAs).
 **Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
 `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
@@ -50,7 +50,6 @@ All six lab directories are submodules (`git submodule status` to see pinned SHA
 |---|---|---|---|---|
 | `agent/` | [`JangMan-J/JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | `main` | Multi-agent coordination skills — the Convergent Arbiter skill package; ACP / Agent-Teams arbiter prompts. | `agent/CLAUDE.md` |
 | `synapse/` | [`JangMan-J/JangLabs-Synapse`](https://github.com/JangMan-J/JangLabs-Synapse) | `main` | The Claude Code harness for this box — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. | `synapse/CLAUDE.md` |
-| `jangsjedi/` | [`JangMan-J/JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | `main` | Visual orchestrator for multiple **interactive** Claude Code workers on a Pro/Max subscription — a Rust workspace (supervisor + `agent-comms` spine; CXX-Qt/Kirigami UI spike). | `jangsjedi/CLAUDE.md` |
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
 | `switchtail/` | [`JangMan-J/JangLabs-SwitchTail`](https://github.com/JangMan-J/JangLabs-SwitchTail) | `main` | SwitchTail — one-handed agent switchboard for kitty: the `stail` CLI, kittens, Plasma 6 board widget, systemd session-regen units. WIP lives on `versioning`. | `switchtail/CLAUDE.md` |
@@ -60,15 +59,17 @@ by SHA, never vendored into JangLabs history (it was the one lab already indepen
 before the others were extracted). The three others (`JangLabs-Agent`/`JangLabs-Synapse`/
 `JangLabs-Proton`) were fresh-init extractions of
 formerly in-tree labs (their pre-extraction history lives in JangLabs' own git log). All
-six repos now share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
-`jangsjedi` (added 2026-06-03) is a fresh standalone-first lab — its own repo wired in
-directly, not an extraction of in-tree history. `switchtail` (added 2026-06-10) was
+repos share the `JangLabs-` name prefix (`jangsjyro`'s is `JangLabs-JangsJyro`).
+`switchtail` (added 2026-06-10) was
 likewise standalone-first: the cockpit toolkit migrated out of loose `$HOME` files into
 its own repo, then wired in. (A
 sixth, `JangLabs-Gamepad`, was likewise extracted but has since been folded into
 `jangsjyro/gamepad/` and its submodule retired — its history remains in JangLabs' git log.
 `JangLabs-Theme` was similarly extracted, then removed as a submodule on 2026-06-04 — its
-repo remains on GitHub and its in-tree history lives in JangLabs' git log.) `synapse` was
+repo remains on GitHub and its in-tree history lives in JangLabs' git log. `jangsjedi`, a
+standalone-first lab added 2026-06-03 — the multi-claude orchestrator Rust workspace —
+was removed on 2026-06-11 along with its GitHub repo `JangLabs-JangsJedi`; only the
+submodule-pointer trail remains in JangLabs' git log.) `synapse` was
 the `claude` lab until 2026-06-11, when the lab, its repo (`JangLabs-Claude` →
 `JangLabs-Synapse`), and its memory taxonomy were renamed at GSD project initiation.
 

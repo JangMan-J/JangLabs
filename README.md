@@ -25,7 +25,6 @@ prefix (`agent` → `JangLabs-Agent`).
 |-----|------------|-------|
 | [`agent/`](./agent) | [`JangLabs-Agent`](https://github.com/JangMan-J/JangLabs-Agent) | Multi-agent coordination skills (Convergent Arbiter; ACP / Agent-Teams arbiter prompts). |
 | [`synapse/`](./synapse) | [`JangLabs-Synapse`](https://github.com/JangMan-J/JangLabs-Synapse) | The Claude Code harness — hooks, `CLAUDE.md` fragment, settings; installed globally via `agent-harness.py`. |
-| [`jangsjedi/`](./jangsjedi) | [`JangLabs-JangsJedi`](https://github.com/JangMan-J/JangLabs-JangsJedi) | Visual orchestrator for multiple interactive Claude Code workers on a Pro/Max subscription (Rust workspace; supervisor + `agent-comms` spine, CXX-Qt UI spike). |
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork (C++23; tracks `branch-a-port`). Hosts the `gamepad/` input-research lab (8BitDo / gyro / Steam-Input-vs-JSM) as a subdir. |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
 | [`switchtail/`](./switchtail) | [`JangLabs-SwitchTail`](https://github.com/JangMan-J/JangLabs-SwitchTail) | SwitchTail — one-handed agent switchboard for kitty (the `stail` CLI, kittens, Plasma 6 board widget, systemd session-regen units). |
