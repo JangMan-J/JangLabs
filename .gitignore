@@ -64,3 +64,8 @@ desktop.ini
 # under /.build/<lab>/ — git-ignored, namespaced per lab. Build systems/sources
 # stay inside each lab. (Note: .claude/ is ignored globally via ~/.config/git/ignore.)
 /.build/
+
+# Retired-era lab archives (working trees + deployed-artifact snapshots with
+# RESTORE.md), e.g. .archive/switchtail-kitty-era/. A dot-dir — honors the
+# non-dot => submodule invariant with no exception.
+/.archive/
