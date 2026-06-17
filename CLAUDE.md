@@ -154,17 +154,17 @@ nothing until you actually re-scope.
 > exactly as the rest of this root file does.
 
 Session handoffs (from the `session-handoff` skill) are written to
-`<launch-cwd>/.synapse/handoffs/` — so a handoff lands in whichever lab (or this root, or
+`<launch-cwd>/.claude/handoffs/` — so a handoff lands in whichever lab (or this root, or
 `$HOME`) you launched from. Because `.claude/` is git-ignored everywhere, these are
 **untracked local scratch**, not committed history. That locality is intended (a lab's
 handoffs stay with the lab), but it scatters them across many directories.
 
-- **Per-lab scratch:** `<lab>/.synapse/handoffs/` — the normal home for a handoff about
-  that lab's work. Cross-lab / root-level handoffs go in `.synapse/handoffs/` here.
+- **Per-lab scratch:** `<lab>/.claude/handoffs/` — the normal home for a handoff about
+  that lab's work. Cross-lab / root-level handoffs go in `.claude/handoffs/` here.
 - **One tracked exception:** `synapse/handoffs/` (no dot) holds committed *design-record*
   handoffs cited by `synapse/README.md` — an archive, not scratch. Leave it tracked.
 - **Discovery:** `.handoff_index` at this root is a generated index of every handoff
-  across all of the above plus `~/.synapse/handoffs/`, **grouped by scope**: cross-lab,
+  across all of the above plus `~/.claude/handoffs/`, **grouped by scope**: cross-lab,
   per-lab, box/unspecified, and stale. It's a git-ignored root dot-file (honors the
   *non-dot ⇒ submodule* invariant with no exception), regenerated each session by
   `synapse/hooks/handoff-index.sh`. Read it to find a handoff; don't hand-edit it.
