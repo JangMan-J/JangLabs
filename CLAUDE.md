@@ -42,7 +42,7 @@ cloneable per lab, and free of cross-lab contamination.
 
 ## Structure — the labs
 
-All five lab directories are submodules (`git submodule status` to see pinned SHAs).
+All six lab directories are submodules (`git submodule status` to see pinned SHAs).
 **Naming:** the submodule path is lowercase; its repo is that path PascalCased with a
 `JangLabs-` prefix (`agent` → `JangLabs-Agent`).
 
@@ -53,6 +53,7 @@ All five lab directories are submodules (`git submodule status` to see pinned SH
 | `jangsjyro/` | [`JangMan-J/JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | `branch-a-port` | The JangsJyro JoyShockMapper fork (C++23, upstream-facing). Also hosts the `gamepad/` input-research lab (8BitDo Ultimate 2 / gyro / Steam-Input-vs-JSM) as a subdir. | `jangsjyro/AGENTS.md` |
 | `proton/` | [`JangMan-J/JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | `main` | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). | `proton/CLAUDE.md` |
 | `switchtail/` | [`JangMan-J/JangLabs-SwitchTail`](https://github.com/JangMan-J/JangLabs-SwitchTail) | `main` | SwitchTail — the operator's switchboard for agentic terminals: a Zellij plugin (Rust → WASM). Fresh-slate restart 2026-06-12; kitty era archived at tag `kitty-era-final` + `.archive/switchtail-kitty-era/`. Trunk-based on `main`. | `switchtail/CLAUDE.md` |
+| `bolt/` | [`JangMan-J/JangLabs-Bolt`](https://github.com/JangMan-J/JangLabs-Bolt) | `main` | Experimentation lab; focus TBD. Scaffolded 2026-06-18 as a standalone-first repo, then wired in. | `bolt/CLAUDE.md` |
 
 `jangsjyro` is the structural model the others now follow: an independent repo, pinned
 by SHA, never vendored into JangLabs history (it was the one lab already independent

@@ -18,3 +18,7 @@
 	path = switchtail
 	url = https://github.com/JangMan-J/JangLabs-SwitchTail.git
 	branch = main
+[submodule "bolt"]
+	path = bolt
+	url = https://github.com/JangMan-J/JangLabs-Bolt.git
+	branch = main

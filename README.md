@@ -28,6 +28,7 @@ prefix (`agent` → `JangLabs-Agent`).
 | [`jangsjyro/`](./jangsjyro) | [`JangLabs-JangsJyro`](https://github.com/JangMan-J/JangLabs-JangsJyro) | The JangsJyro JoyShockMapper fork (C++23; tracks `branch-a-port`). Hosts the `gamepad/` input-research lab (8BitDo / gyro / Steam-Input-vs-JSM) as a subdir. |
 | [`proton/`](./proton) | [`JangLabs-Proton`](https://github.com/JangMan-J/JangLabs-Proton) | ProtonDB-driven Linux/Proton config inference (the `protondb-tuner` skill). |
 | [`switchtail/`](./switchtail) | [`JangLabs-SwitchTail`](https://github.com/JangMan-J/JangLabs-SwitchTail) | SwitchTail — the operator's switchboard for agentic terminals: a Zellij plugin (Rust → WASM); one-press line focus, seat swap, per-line messaging, triageable call log. |
+| [`bolt/`](./bolt) | [`JangLabs-Bolt`](https://github.com/JangMan-J/JangLabs-Bolt) | Experimentation lab; focus TBD (scaffolded 2026-06-18). |
 
 ## Working with this repo
 
